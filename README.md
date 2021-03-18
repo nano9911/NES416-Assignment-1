@@ -19,7 +19,7 @@ to.
 Finally, both server and client once receive a message from the other it should print
 the **sender ip and port number**.
 
-##Quoting from Dr.Raed documet:
+## Quoting from Dr.Raed documet:
 > Output Sample:
 > For example, running the code should produce something similar to this output:
 >   Client_side> please enter your expression:
