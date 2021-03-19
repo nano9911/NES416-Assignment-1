@@ -85,7 +85,10 @@ int main(int argc, char *argv[])
                 break;
             }
 
+            printf("received \"%s\" from the client %s:%s\n", recv_buf, peer_name, peer_port);
+
             if (!strcmp(recv_buf, "exit"))   {
+                printf("exiting\n");
                 close(clientfd);
                 break;
             }
@@ -98,6 +101,7 @@ int main(int argc, char *argv[])
             else    {sprintf(send_buf, "%d", result);}
 
             rv = send(clientfd, send_buf, strlen(send_buf), 0);
+            printf("Sending \"%s\" to the client\n", send_buf);
             if (rv == -1)   {
                 perror("server: send");
                 close(clientfd);
@@ -105,7 +109,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        printf("Closing connection with %s:%s", peer_name, peer_port);
+        printf("Closing connection with %s:%s\n", peer_name, peer_port);
         close(clientfd);  /* We don't need this, so clsose it.. */
     }
 
