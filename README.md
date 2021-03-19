@@ -1,5 +1,5 @@
 # NES 416
-## Assignment 1
+# Assignment 1
 
 **By:**
 - Adnan Omar [@nano9911](https://github.com/nano9911) (JUST ID:123423)
@@ -23,7 +23,6 @@ The server also read the command line arguments **(argv)** to indicate the port 
 
 Finally, both server and client once receive a message from the other, it should print
 the **sender ip and port number** with it.
-
 
 
 ## Quoting from Dr.Raed documet:
