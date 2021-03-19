@@ -39,7 +39,9 @@ the **sender ip and port number** with it.
 >
 >   **Server_side$** *received "1 + 2" from the client (IP address, port #)*
 >
->   **Server_side$** *Sending " 3 " to the clientServer_side > waiting for client messages*
+>   **Server_side$** *Sending " 3 " to the client*
+>   
+>   **Server_side$** *waiting for client messages*
 >
 >   **Client_side$** *1+2 = 3 (server IP , Port#), where 3 is the answer received from the server*
 >
