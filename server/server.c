@@ -7,8 +7,8 @@
  */
 
 
-#include "socket_handlers.h"
-#include "server_messages_handler.h"
+#include "socket_handler.h"
+#include "message_handler.h"
 
 #define RECV_BUF_LEN 128        // Receive buffer size in bytes
 #define SEND_BUF_LEN 20         // Send buffer size
