@@ -1,6 +1,6 @@
 # NES 416
 ## Assignment 1
-### Adnan Omar 123423
+### Adnan Omar @nano9911 (JUST ID:123423) and Roua Kofahi @rouakofahi (JUST ID: 126474)
 
 This is the source code for our NES416 / Network Programming course Assignment 1.
 
@@ -19,8 +19,11 @@ to.
 Finally, both server and client once receive a message from the other it should print
 the **sender ip and port number**.
 
-## Quoting from Dr.Raed documet:
+
+### Quoting from Dr.Raed documet:
+
 > Output Sample:
+> 
 > For example, running the code should produce something similar to this output:
 >   Client_side> please enter your expression:
 >   1 + 2 (input from a user)
