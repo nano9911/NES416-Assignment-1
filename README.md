@@ -31,24 +31,24 @@ the **sender ip and port number** with it.
 > 
 > For example, running the code should produce something similar to this output:
 >
->   Server_side $ waiting for client messages.
+>   **Server_side$** *waiting for client messages.*
 >
->   Client_side $ please enter your expression:
+>   **Client_side$** *please enter your expression:*
 >
 >   1 + 2 (input from a user)
 >
->   Sever_side $ received "1 + 2" from the client (IP address, port #)
+>   **Server_side$** *received "1 + 2" from the client (IP address, port #)*
 >
->   Server_side $ Sending " 3 " to the clientServer_side > waiting for client messages
+>   **Server_side$** *Sending " 3 " to the clientServer_side > waiting for client messages*
 >
->   Client_side $ 1+2 = 3 (server IP , Port#), where 3 is the answer received from the server
+>   **Client_side$** *1+2 = 3 (server IP , Port#), where 3 is the answer received from the server*
 >
->   Client_side $ please enter your expression:
+>   **Client_side$** *please enter your expression:*
 >
 >   exit (input from a user)
 >
->   Client_side $ exiting (then the client side exits, and also the server side)
+>   **Client_side$** *exiting (then the client side exits, and also the server side)*
 >
->   Server_side $ received "exit" from the client (IP address, port #)
+>   **Server_side$** *received "exit" from the client (IP address, port #)*
 >
->   Server_side $ exiting ( then the server exits)
+>   **Server_side$** *exiting ( then the server exits)*
