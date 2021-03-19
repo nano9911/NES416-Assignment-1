@@ -1,5 +1,4 @@
-# NES 416
-# Assignment 1
+# NES 416 Assignment #1
 
 **By:**
 - Adnan Omar [@nano9911](https://github.com/nano9911) (JUST ID:123423)
