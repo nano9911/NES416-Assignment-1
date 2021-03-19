@@ -2,9 +2,10 @@
  * @file server_messages_handler.h
  * @author Adnan Omar (JUST ID: 123423)
  * @brief Messages handler header (all from scratch) for NES416/HW1
- * @version 0.1
  * @date 2021-03-18
+ *
  */
+
 
 /* Macro to make the function of get values from client message */
 #define var(which,var1,var2)  ((which) == (0) ? (var1) : (var2))

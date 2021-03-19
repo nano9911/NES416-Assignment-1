@@ -2,12 +2,10 @@
  * @file socket_handlers.h
  * @author Adnan Omar (JUST ID: 123423)
  * @brief Header file of NES416/HW1
- * @version 0.1
  * @date 2021-03-18
  * 
- * @copyright Copyright (c) 2021
- * 
  */
+
 
 #include <stdio.h>
 #include <stdlib.h>

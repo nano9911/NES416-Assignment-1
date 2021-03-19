@@ -2,12 +2,10 @@
  * @file HW1_server.c
  * @author Adnan Omar (JUST ID: 123423)
  * @brief Main file of NES416/HW1
- * @version 0.1
  * @date 2021-03-17
  * 
- * @copyright Copyright (c) 2021
- * 
  */
+
 
 #include "socket_handlers.h"
 #include "server_messages_handler.h"
