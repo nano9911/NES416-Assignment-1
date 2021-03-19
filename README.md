@@ -2,8 +2,8 @@
 ## Assignment 1
 
 **By:**
-Adnan Omar @nano9911 (JUST ID:123423)
-Roua Kofahi @rouakofahi (JUST ID: 126474)
+Adnan Omar [@nano9911](https://github.com/nano9911) (JUST ID:123423)
+Roua Kofahi [@rouakofahi](https://github.com/rouakofahi) (JUST ID: 126474)
 
 This is the source code for our NES416 / Network Programming course Assignment 1.
 
@@ -25,7 +25,8 @@ Finally, both server and client once receive a message from the other, it should
 the **sender ip and port number** with it.
 
 
-### Quoting from Dr.Raed documet:
+
+## Quoting from Dr.Raed documet:
 
 > Output Sample:
 > 
