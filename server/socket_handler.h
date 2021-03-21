@@ -1,5 +1,5 @@
 /**
- * @file socket_handlers.h
+ * @file socket_handler.h
  * @author Adnan Omar (JUST ID: 123423)
  * @brief Header file of NES416/HW1
  * @date 2021-03-18
