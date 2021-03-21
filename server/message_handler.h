@@ -12,7 +12,6 @@
 
 /* Enumeration values to make the operation more understandable */
 enum operations {ERR=0, ADD=1, MINUS=2, MUL=3, DIV=4};
-const char allowed[] = "0123456789+-*/";
 
 /*
  *  Just To make the code clearer I separated this part from the message handler.
@@ -40,22 +39,6 @@ enum operations decode_operation(char op)   {
 }
 
 /*
- *  Simple loop to remove all spaced and make the decoding process easier.
- *  Accepts a string and it's length.
- */
-void remove_spaces(char str[], int *len)
-{
-    int c = 0;
-    for (int i = 0; i < *(len); i++)   {
-        if (str[i] != ' ')  {
-            str[c++] = str[i];
-            *(len)--;
-        }
-    }
-    str[c] = '\0';
-}
-
-/*
  *  This function is isolated from main() to keep the networking part clearer. It's
  *  responsible to handle the function of understanding the client's message, and
  *  detemine if it's valid or not.
@@ -65,7 +48,6 @@ void remove_spaces(char str[], int *len)
  */
 int handle_msg(char msg[], int len, int *result)
 {
-//    remove_spaces(msg, &len);
     int x = 0, y = 0, res = 0;
     enum operations op = ERR;
 
@@ -81,12 +63,6 @@ int handle_msg(char msg[], int len, int *result)
      */
     unsigned char a = 0;
     char temp;
-
-    /*
-     *  If the message include any character that isn't a number or an operator,
-     *  return an error value.
-     */
-//    if (strcspn(msg, allowed) != len) {return -1;}
 
     for (int i = 0; i < len; i++)   {
         temp = msg[i];
