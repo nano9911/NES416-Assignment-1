@@ -86,7 +86,7 @@ int handle_msg(char msg[], int len, int *result)
             else if (i == len-1 || i == 0)    {return -1;}
 
             op = decode_operation(temp);
-            if (op == 0)    {return -2;}
+            if (op == ERR)    {return -2;}
         }
     }
 
