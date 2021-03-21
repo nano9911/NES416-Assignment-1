@@ -1,7 +1,7 @@
 /**
  * @file HW1_server.c
  * @author Adnan Omar (JUST ID: 123423)
- * @brief Main file of NES416/HW1
+ * @brief Main server file of NES416/HW1
  * @date 2021-03-17
  * 
  */
@@ -85,9 +85,9 @@ int main(int argc, char *argv[])
                 break;
             }
 
-            printf("received \"%s\" from the client %s:%s\n", recv_buf, peer_name, peer_port);
+            printf("\nreceived \"%s\" from the client %s:%s\n", recv_buf, peer_name, peer_port);
 
-            if (!strcmp(recv_buf, "exit"))   {
+            if (strcmp(recv_buf, "exit") == 0)   {
                 printf("exiting\n");
                 close(clientfd);
                 break;
@@ -110,6 +110,8 @@ int main(int argc, char *argv[])
         }
 
         printf("Closing connection with %s:%s\n", peer_name, peer_port);
+        memset(peer_name,0,sizeof(peer_name));
+        memset(peer_port,0,sizeof(peer_port));
         close(clientfd);  /* We don't need this, so clsose it.. */
     }
 
