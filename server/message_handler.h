@@ -1,5 +1,5 @@
 /**
- * @file server_messages_handler.h
+ * @file message_handler.h
  * @author Adnan Omar (JUST ID: 123423)
  * @brief Messages handler header (all from scratch) for NES416/HW1
  * @date 2021-03-18
