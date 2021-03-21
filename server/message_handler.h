@@ -65,7 +65,7 @@ void remove_spaces(char str[], int *len)
  */
 int handle_msg(char msg[], int len, int *result)
 {
-    remove_spaces(msg, &len);
+//    remove_spaces(msg, &len);
     int x = 0, y = 0, res = 0;
     enum operations op = ERR;
 
@@ -93,7 +93,7 @@ int handle_msg(char msg[], int len, int *result)
         if (temp == ' ')    {continue;}
 
         /* If it's a number add it as digit to the current varibale (x or y) */
-        if ((int)temp > 47 && (int)temp < 58)   {
+        if (temp >= '0' && temp <= '9')   {
             /* var() -> is a macro determine which variable we are filling (x or y) */
             *(var(a, &x, &y)) += (int)temp - 48;
             *(var(a, &x, &y)) *= 10;
@@ -102,7 +102,7 @@ int handle_msg(char msg[], int len, int *result)
         else  {
             /* if it's an operator, we should turn a to > 1, so for the next iterations
                 we could fill the y as the second parametr instead of x. */
-            a += 1;
+            a++;
             /* If there's more than one operator return an error. */
             if (a > 1)  {return -1;}
             /* If the operator is the last or fisrt character in string, this means that we had 
