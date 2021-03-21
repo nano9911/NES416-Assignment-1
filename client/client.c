@@ -21,7 +21,7 @@
 
 int main(int argc,char ** argv)
 {
-    struct sockaddr_in sa;
+    struct sockaddr_in sa, lo;
     int received, sent;         /*counters for bytes sent per each send() or recv()*/
     int conntfd,sockfd;                  /*discriptors to reach the sockets*/
     char send_buf[SEND_BUF_LEN];                      /*buffer to write received data in*/
@@ -50,15 +50,20 @@ int main(int argc,char ** argv)
     // assigning PORT and IP address 
     sa.sin_family=AF_INET;
     sa.sin_port=htons(port);
-     if(inet_pton(AF_INET,argv[1],&sa.sin_addr) <= 0) /* converting Ipv4/Ipv6 string to binary */
+    if(inet_pton(AF_INET,argv[1],&sa.sin_addr) <= 0) /* converting Ipv4/Ipv6 string to binary */
     {
         printf("\nERROR IN IP ADDRESS\n");
         exit(1);
     }
 
-    if (bind(sockfd, (struct sockaddr *)&sa, sizeof(sa)))
-    {
+    bzero(&lo,sizeof(lo));
+    lo.sin_family = AF_INET;
+    lo.sin_port = htons(55474);     /*filling structure with port to pass it to bind()*/
 
+    if (bind(sockfd, (struct sockaddr *)&lo, sizeof(lo)))   /*binding to socket 55474*/
+    {
+        printf("\nERROR IN BIND 2\n");
+        exit(1);
     }
 
     if(connect(sockfd,(struct sockaddr*)&sa,sizeof(sa)) < 0) /*connecting the server socket with the client socket*/

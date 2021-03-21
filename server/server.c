@@ -3,7 +3,7 @@
  * @author Adnan Omar (JUST ID: 123423)
  * @brief Main server file of NES416/HW1
  * @date 2021-03-17
- * 
+ *
  */
 
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     struct sockaddr_storage their_addr;
 
     /* Will contain the length of the returned address from aacept() syetem call. */
-    socklen_t sin_size;
+    socklen_t sin_size = sizeof(their_addr);
 
     /* Will contain the IP and Port in host byte order of client in their_addr */
     char peer_name[NI_MAXHOST], peer_port[NI_MAXSERV];
@@ -54,7 +54,8 @@ int main(int argc, char *argv[])
 
     while(1)    {
         printf("\n\nwaiting for client messages...\n");
-        
+        memset(&their_addr, 0, sizeof(their_addr));
+
         /*  accept() will return the client socket to clientfd.
         *   Also, it will fill their_addr with the IP address and port number of
         *   the peer of the connecion (client) in network byte order, and the
@@ -66,6 +67,8 @@ int main(int argc, char *argv[])
             break;
         }
 
+        memset(peer_name,0,sizeof(peer_name));
+        memset(peer_port,0,sizeof(peer_port));
         /*  getnameinfo() will convert the IP:Port from network byte order to
         *   host byte order.
         *   The address will be saved as string in host byte order in peer_name
@@ -110,9 +113,7 @@ int main(int argc, char *argv[])
         }
 
         printf("Closing connection with %s:%s\n", peer_name, peer_port);
-        memset(peer_name,0,sizeof(peer_name));
-        memset(peer_port,0,sizeof(peer_port));
-        close(clientfd);  /* We don't need this, so clsose it.. */
+        close(clientfd);  /* We don't need this, so close it.. */
     }
 
     close(listenfd);
