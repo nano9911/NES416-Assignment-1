@@ -109,4 +109,5 @@ int handle_msg(char msg[], int len, int *result)
     }
 
     *result = res;
+    return 0;
 }
