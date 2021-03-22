@@ -43,8 +43,6 @@ int main(int argc,char ** argv)
         exit(1);
     }
 
-    printf("\nSOCKET IS OPENNED\n");
-    printf("\n********************\n");
     bzero(&sa,sizeof(sa));               /*making sure that sa's data is erased */
 
     // assigning PORT and IP address 
@@ -72,7 +70,6 @@ int main(int argc,char ** argv)
         exit(1);
     }
 
-    printf("connected successfully\n");      
     while (1)  {
         memset(send_buf, 0, SEND_BUF_LEN);
         memset(recv_buf, 0, RECV_BUF_LEN);

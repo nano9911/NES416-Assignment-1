@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     CreateSocket(NULL, argv[1], &hints, &listenfd);
 
     while(1)    {
-        printf("\n\nwaiting for client messages...\n");
+        printf("\n\nwaiting for connections...\n\n");
         memset(&their_addr, 0, sizeof(their_addr));
 
         /*  accept() will return the client socket to clientfd.
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
         while (1) {
             /* We zeroed (reseted) recv_buf, to clean it for the next data coming. */
             memset(recv_buf, 0, RECV_BUF_LEN);
-
+            printf("waiting for client: %s:%s messages...\n", peer_name, peer_port);
             received = recv(clientfd, recv_buf, RECV_BUF_LEN, 0);
             if (received <= 0) {
                 perror("server: recv");
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
             else    {sprintf(send_buf, "%d", result);}
 
             rv = send(clientfd, send_buf, strlen(send_buf), 0);
-            printf("Sending \"%s\" to the client\n", send_buf);
+            printf("Sending \"%s\" to the client\n\n", send_buf);
             if (rv == -1)   {
                 perror("server: send");
                 close(clientfd);
