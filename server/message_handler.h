@@ -102,6 +102,8 @@ int handle_msg(char msg[], int len, int *result)
             res = x * y;
             break;
         case DIV:
+            if (y == 0)
+                return -3;
             res = x / y;
             break;
         default:

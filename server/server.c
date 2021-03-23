@@ -101,6 +101,7 @@ int main(int argc, char *argv[])
 
             if (rv == -1)   {sprintf(send_buf, "Invalid values.");}
             else if (rv == -2)   {sprintf(send_buf, "Invalid opration.");}
+            else if (rv == -2)   {sprintf(send_buf, "Division by zero.");}
             else if (rv == 0)    {sprintf(send_buf, "%d", result);}
 
             rv = send(clientfd, send_buf, strlen(send_buf), 0);
