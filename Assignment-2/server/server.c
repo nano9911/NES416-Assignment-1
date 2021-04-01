@@ -17,6 +17,20 @@
 int listenfd,               /* Server listening socket */
     clientfd;               /* Client handler socket */
 
+/* Will be filled with the address of the peer connection (client ip and port). */
+struct sockaddr_storage their_addr;
+
+/* Will contain the length of the returned address from aacept() syetem call. */
+socklen_t sin_size = sizeof(their_addr);
+
+int client_handler();
+
+void signal_handler(int sig_no)   {
+    int pid, rv;
+    pid = wait(&rv);
+    printf("%d child process end with exit code %d\n", pid, rv);
+}
+
 int main(int argc, char *argv[])
 {
     if (argc != 2)  {
@@ -24,21 +38,20 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    if (atoi(argv[1]) < 45000 || atoi(argv[1]) > 65000)  {
+        printf("port out of range\n");
+        exit(0);
+    }
+
     /*  After fork it will:
     *   *   Contains children process id in parent.
     *   *   Will be the last value of it before parent called fork in child .  */
     int pid = 0;
+    int rv, op=0;
 
     /*  hints -> We will fill it with out server specifications
     *   (ip version, transport protocol, some flags). */
     struct addrinfo hints;
-
-    /* Will be filled with the address of the peer connection (client ip and port). */
-    struct sockaddr_storage their_addr;
-
-    /* Will contain the length of the returned address from aacept() syetem call. */
-    socklen_t sin_size = sizeof(their_addr);
-
 
     /*  Firstly, we will clear (zeroing) the hints struct (for safety). Then,
     *   we will fill it with our configuration of the server.
@@ -52,9 +65,17 @@ int main(int argc, char *argv[])
     /* argv[1] is the port number you want the server to bind and listen to. */
     CreateSocket(NULL, argv[1], &hints, &listenfd);
 
+    /*  Specify a signal handler for SIGCHLD signal */
+    rv = signal(SIGCHLD, signal_handler);
+    if (rv != 0)    {
+        perror("server: signal");
+        exit(1);
+    }
+
     while(1)    {
         printf("\n\nwaiting for connections...\n\n");
         memset(&their_addr, 0, sizeof(their_addr));
+        sin_size = sizeof their_addr;
 
         /*  accept() will return the client socket to clientfd.
         *   Also, it will fill their_addr with the IP address and port number of
@@ -67,6 +88,14 @@ int main(int argc, char *argv[])
             break;
         }
 
+        pid = fork();
+        if (pid == 0)   {
+            close(listenfd);
+            rv = client_handler();
+            close(clientfd);
+            exit(0);
+        }
+
         close(clientfd);  /* We don't need this, so close it.. */
     }
 
@@ -74,12 +103,12 @@ int main(int argc, char *argv[])
     exit(0);
 }
 
-void client_handler(struct sockaddr *their_addr, socklen_t sin_size)
+int client_handler()
 {
-    close(listenfd);
-
     char recv_buf[RECV_BUF_LEN], send_buf[SEND_BUF_LEN];
     int rv, received = 0, result;
+    enum operations choice = ERR;
+    char *choices[] = {"ERROR", "ADD", "SUBSTRACT", "MULTIPLY", "DIVISION", "GPA", "EXIT"};
 
     /* Will contain the IP and Port in host byte order of client in their_addr */
     char peer_name[NI_MAXHOST], peer_port[NI_MAXSERV];
@@ -95,39 +124,47 @@ void client_handler(struct sockaddr *their_addr, socklen_t sin_size)
     while (1) {
         /* We zeroed (reseted) recv_buf, to clean it for the next data coming. */
         memset(recv_buf, 0, RECV_BUF_LEN);
+
         printf("waiting for client: %s:%s messages...\n", peer_name, peer_port);
         received = recv(clientfd, recv_buf, RECV_BUF_LEN, 0);
         if (received <= 0) {
             perror("server: recv");
-            close(clientfd);
             break;
         }
 
-        printf("\nreceived \"%s\" from the client %s:%s\n", recv_buf, peer_name, peer_port);
+        if (recv_buf[0] >= '1' && recv_buf[0] <= '6')
+                choice = atoi(recv_buf[0]);
+        recv_buf[0] = ' ';
+        printf("\nclient %s:%s:\tchoice: %s with message: \"%s\" from the\n",
+                    peer_name, peer_port, choices[choice], recv_buf);
 
-        if (strcmp(recv_buf, "exit") == 0)   {
+        if (choice == EXIT)   {
             printf("exiting\n");
-            close(clientfd);
+            rv = 0;
             break;
         }
-
-        /* Pass our handler the message. */
-        rv = handle_msg(recv_buf, received, &result);
+ 
+        if (choice != ERR)  {
+            /* Pass our handler the message. */
+            rv = handle_msg(recv_buf, received, &result, choice);
+        }
+        else
+            continue;
 
         if (rv == -1)   {sprintf(send_buf, "Invalid values.");}
         else if (rv == -2)   {sprintf(send_buf, "Invalid opration.");}
-        else if (rv == -2)   {sprintf(send_buf, "Division by zero.");}
+        else if (rv == -3)   {sprintf(send_buf, "Division by zero.");}
+        else if (rv == -4)   {sprintf(send_buf, "Invalid Choice.");}
         else if (rv == 0)    {sprintf(send_buf, "%d", result);}
 
         rv = send(clientfd, send_buf, strlen(send_buf), 0);
         printf("Sending \"%s\" to the client\n\n", send_buf);
         if (rv == -1)   {
             perror("server: send");
-            close(clientfd);
             break;
         }
     }
 
     printf("Closing connection with %s:%s\n", peer_name, peer_port);
-   
+    return rv;
 }

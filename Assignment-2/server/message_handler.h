@@ -1,4 +1,4 @@
-/**
+ /**
  * @file message_handler.h
  * @author Adnan Omar (JUST ID: 123423)
  * @brief Messages handler header (all from scratch) for NES416/HW1
@@ -11,7 +11,7 @@
 #define var(which,var1,var2)  ((which) == (0) ? (var1) : (var2))
 
 /* Enumeration values to make the operation more understandable */
-enum operations {ERR=0, ADD=1, MINUS=2, MUL=3, DIV=4};
+enum operations {ERR=0, ADD=1, MINUS=2, MUL=3, DIV=4, GPA=5, EXIT=6};
 
 /*
  *  Just To make the code clearer I separated this part from the message handler.
@@ -46,7 +46,7 @@ enum operations decode_operation(char op)   {
  *  If the message is valid it will return 0, and the result will be in passes to 
  *  the integer result.
  */
-int handle_msg(char msg[], int len, int *result)
+int handle_msg(char msg[], int len, int *result, enum operations choice)
 {
     int x = 0, y = 0, res = 0;
     enum operations op = ERR;
@@ -87,6 +87,7 @@ int handle_msg(char msg[], int len, int *result)
 
             op = decode_operation(temp);
             if (op == ERR)    {return -2;}
+            
         }
     }
 

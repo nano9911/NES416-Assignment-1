@@ -54,16 +54,6 @@ int main(int argc,char ** argv)
         exit(1);
     }
 
-    bzero(&lo,sizeof(lo));
-    lo.sin_family = AF_INET;
-    lo.sin_port = htons(55474);     /*filling structure with port to pass it to bind()*/
-
-    if (bind(sockfd, (struct sockaddr *)&lo, sizeof(lo)))   /*binding to socket 55474*/
-    {
-        printf("\nERROR IN BIND 2\n");
-        exit(1);
-    }
-
     if(connect(sockfd,(struct sockaddr*)&sa,sizeof(sa)) < 0) /*connecting the server socket with the client socket*/
     {
         printf("\nERROR IN CONNECTION \n");
