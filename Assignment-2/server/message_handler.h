@@ -24,18 +24,10 @@ enum operations {ERR=0, ADD=1, MINUS=2, MUL=3, DIV=4, GPA=5, EXIT=6};
 enum operations decode_operation(char op)   {
     enum operations ret = ERR;
     switch (op) {
-        case '+':
-            ret = ADD;
-            break;
-        case '-':
-            ret = MINUS;
-            break;
-        case '*':
-            ret = MUL;
-            break;
-        case '/':
-            ret = DIV;
-            break;
+        case '+':   ret = ADD;  break;
+        case '-':   ret = MINUS;    break;
+        case '*':   ret = MUL;  break;
+        case '/':   ret = DIV;  break;
         default:
             ret = ERR;
     }
