@@ -91,34 +91,45 @@ int main(int argc, char *argv[])
             break;
         }
 
+        /*  Creating a child process to handle the new accepted connection, and the parent
+        *   will return to accept more new clients. */
         pid = fork();
         if (pid == 0)   {
+            /*  child don't need that*/
             close(listenfd);
             rv = client_handler();
             close(clientfd);
-            exit(0);
+            exit(rv);
         }
 
         childcount++;
-        close(clientfd);  /* We don't need this, so close it.. */
+        /*  parent doesn't need that    */
+        close(clientfd);
     }
-    for (int i = 0; i < childcount; i++)
-        {pid = wait(&rv);}
-    close(listenfd);
+    /*  if parent ended in an unpredictable way, we should wait for live children to end    */
+    for (int i = 0; i < childcount; i++)    {
+        pid = wait(&rv);
+        printf("%d child process end with exit code %d\n", pid, rv);
+    }
 
+    close(listenfd);
     printf("Parent Server listen socket closed\nFinished\n");
     exit(0);
 }
 
 /**
- * @brief 
+ * @brief child proccess function to handle connection before fork() in parent.
+ *  from the start of this file we made the required parameters global (out of main()),
+ *  to get rid of any parameters passing issues.
  * 
- * @return int 
+ * @return int, defines the state or the cause of the connection termination process.
  */
 int client_handler()
 {
     char recv_buf[RECV_BUF_LEN], send_buf[SEND_BUF_LEN];
     int rv, received = 0, result;
+
+    /*  choice is the first character from the client message   */
     enum operations choice = ERR;
     char *choices[] = {"ERROR", "ADD", "SUBSTRACT", "MULTIPLY", "DIVISION", "GPA", "EXIT"};
 
@@ -144,6 +155,8 @@ int client_handler()
             break;
         }
 
+        /*  check user choice field, if it's valid we will assign it to "choice" variable,
+        *   and replace it with space to make the extarction process easier.    */
         if (recv_buf[0] >= '1' && recv_buf[0] <= '6')
             {choice = atoi(recv_buf[0]);}
 
@@ -158,7 +171,7 @@ int client_handler()
         }
  
         else if (choice != ERR)  {
-            /* Pass our handler the message. */
+            /* Pass the appropriate handler the message. */
             if (choice == GPA)
                 {rv = handle_gpa(recv_buf, &result, received);}
             else
