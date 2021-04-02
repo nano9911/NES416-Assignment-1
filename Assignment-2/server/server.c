@@ -17,6 +17,8 @@
 int listenfd,               /* Server listening socket */
     clientfd;               /* Client handler socket */
 
+int childcount = 0;
+
 /* Will be filled with the address of the peer connection (client ip and port). */
 struct sockaddr_storage their_addr;
 
@@ -29,6 +31,7 @@ void signal_handler(int sig_no)   {
     int pid, rv;
     pid = wait(&rv);
     printf("%d child process end with exit code %d\n", pid, rv);
+    childcount--;
 }
 
 int main(int argc, char *argv[])
@@ -96,13 +99,22 @@ int main(int argc, char *argv[])
             exit(0);
         }
 
+        childcount++;
         close(clientfd);  /* We don't need this, so close it.. */
     }
-
+    for (int i = 0; i < childcount; i++)
+        {pid = wait(&rv);}
     close(listenfd);
+
+    printf("Parent Server listen socket closed\nFinished\n");
     exit(0);
 }
 
+/**
+ * @brief 
+ * 
+ * @return int 
+ */
 int client_handler()
 {
     char recv_buf[RECV_BUF_LEN], send_buf[SEND_BUF_LEN];
@@ -133,7 +145,8 @@ int client_handler()
         }
 
         if (recv_buf[0] >= '1' && recv_buf[0] <= '6')
-                choice = atoi(recv_buf[0]);
+            {choice = atoi(recv_buf[0]);}
+
         recv_buf[0] = ' ';
         printf("\nclient %s:%s:\tchoice: %s with message: \"%s\" from the\n",
                     peer_name, peer_port, choices[choice], recv_buf);
@@ -144,17 +157,20 @@ int client_handler()
             break;
         }
  
-        if (choice != ERR)  {
+        else if (choice != ERR)  {
             /* Pass our handler the message. */
-            rv = handle_msg(recv_buf, received, &result, choice);
+            if (choice == GPA)
+                {rv = handle_gpa(recv_buf, &result, received);}
+            else
+                {rv = handle_msg(recv_buf, received, &result, choice);}
         }
-        else
-            continue;
+        else    {rv = -4;}
 
         if (rv == -1)   {sprintf(send_buf, "Invalid values.");}
         else if (rv == -2)   {sprintf(send_buf, "Invalid opration.");}
         else if (rv == -3)   {sprintf(send_buf, "Division by zero.");}
         else if (rv == -4)   {sprintf(send_buf, "Invalid Choice.");}
+        else if (rv == -5)   {sprintf(send_buf, "Invalid GPA List.");}
         else if (rv == 0)    {sprintf(send_buf, "%d", result);}
 
         rv = send(clientfd, send_buf, strlen(send_buf), 0);
