@@ -54,9 +54,12 @@ extract it.
 >
 > For the GPA (Grade Point Average) calculation, you need to send the server a comma separated
 > list containing the course grade (out of 100) and number of credit hours for that course.
-> For example, if you send: 
+> For example, if you send:
+> 
 > 80,3,90,1,65,3,70,2, -1 
+> 
 > this means that you need to compute the GPA as the following, where -1 indicates the end of the list
+> 
 > GPA= (80*3 + 90*1 + 65*3 + 70*2)/9 = 73.88
 >
 > Note that in all cases, the parent server is kept running.
