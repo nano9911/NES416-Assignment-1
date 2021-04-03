@@ -25,6 +25,8 @@ struct sockaddr_storage their_addr;
 /* Will contain the length of the returned address from aacept() syetem call. */
 socklen_t sin_size = sizeof(their_addr);
 
+char menu[] = "1) Add.\n2) Substract.\n3) Divide.\n4) Multiply.\n5) Compute GPA.\n6) Exit.";
+
 int client_handler();
 
 void signal_handler(int sig_no)   {
@@ -145,6 +147,14 @@ int client_handler()
     printf("server: got connection from %s:%s\n", peer_name, peer_port);
 
     while (1) {
+        /*  send the menu of options the server can offer to client, so the user can
+        *   choose from the client side */
+        rv = send(clientfd, menu, sizeof(menu), 0);
+        if (rv == -1)   {
+            perror("server: send menu");
+            break;
+        }
+
         /* We zeroed (reseted) recv_buf, to clean it for the next data coming. */
         memset(recv_buf, 0, RECV_BUF_LEN);
 
@@ -189,7 +199,7 @@ int client_handler()
         rv = send(clientfd, send_buf, strlen(send_buf), 0);
         printf("Sending \"%s\" to the client\n\n", send_buf);
         if (rv == -1)   {
-            perror("server: send");
+            perror("server: send result");
             break;
         }
     }
