@@ -32,15 +32,15 @@ extract it.
 
 
 ## Quoting from Dr.Raed documet:
-
+>
 > The functionality starts by the child server sending the client a menu which contains function to
 > choose from. The menu should look like the following
-> 1) Add
-> 2) Subtract
-> 3) Divide
-> 4) Multiply
-> 5) Compute GPA
-> 6) Exit
+>   1) Add
+>   2) Subtract
+>   3) Divide
+>   4) Multiply
+>   5) Compute GPA
+>   6) Exit
 >
 > After receiving the menu, the client displays it on the screen waiting for user input (selection).
 >
@@ -53,17 +53,14 @@ extract it.
 >
 >
 > For the GPA (Grade Point Average) calculation, you need to send the server a comma separated
-> list containing the course grade (out of 100) and number of credit hours for that course. For example,
-> if you send 80,3,90,1,65,3,70,2, -1 this means that you need to compute the GPA as the following,
-> where -1 indicates the end of the list
+> list containing the course grade (out of 100) and number of credit hours for that course.
+> For example, if you send: 
 >
-> |---------------------------------------------------------------|
-
-> | Grade         |  80  |   90  |   65  |    70  |   -1          |
-
-> | Credit hours  |  3   |   1   |   3   |    2   |   End of list |
-
-> |---------------------------------------------------------------|
+> 80,3,90,1,65,3,70,2, -1 
+>
+> this means that you need to compute the GPA as the following, where -1 indicates the end of the list
 >
 > GPA= (80*3 + 90*1 + 65*3 + 70*2)/9 = 73.88
+>
 > Note that in all cases, the parent server is kept running.
+>
