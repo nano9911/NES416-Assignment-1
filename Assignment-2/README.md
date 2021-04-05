@@ -1,5 +1,5 @@
-# NES 416 Assignment #1
->[Link to project](https://github.com/nano9911/NES416-Assignments)
+# NES 416 Assignment #2
+>[Link to project](https://github.com/nano9911/NES416-Assignments/tree/main/Assignment-2)
 
 **By:**
 - Adnan Omar [@nano9911](https://github.com/nano9911) (JUST ID:123423)
