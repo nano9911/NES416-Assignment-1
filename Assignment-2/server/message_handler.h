@@ -136,7 +136,7 @@ int handle_gpa(char *msg, int *result, int length)
         if (msg[i] == ' ')  {continue;}
         if (msg[i] >= '0' || msg[i] <='9' && end == 0x00)  {
             /*  Use the macro to determine where to put the value    */
-            *(var2(commas, &m, &h)) =+ atoi(msg[i]);
+            *(var2(commas, &m, &h)) =+ (int)msg[i] - 48;
             *(var2(commas, &m, &h)) *= 10;
         }
         /*  When we find a comma, we should check, if we had filled 'm' and 'h' variables to use them or not    */

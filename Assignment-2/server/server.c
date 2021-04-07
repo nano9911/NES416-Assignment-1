@@ -168,7 +168,7 @@ int client_handler()
         /*  check user choice field, if it's valid we will assign it to "choice" variable,
         *   and replace it with space to make the extarction process easier.    */
         if (recv_buf[0] >= '1' && recv_buf[0] <= '6')
-            {choice = atoi(recv_buf[0]);}
+            {choice = (int)recv_buf[0] - 48;}
 
         recv_buf[0] = ' ';
         printf("\nclient %s:%s:\tchoice: %s with message: \"%s\" from the\n",
