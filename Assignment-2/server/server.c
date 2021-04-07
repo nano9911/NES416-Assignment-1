@@ -146,15 +146,15 @@ int client_handler()
                 peer_port, sizeof(peer_port), NI_NUMERICHOST | NI_NUMERICSERV);
     printf("server: got connection from %s:%s\n", peer_name, peer_port);
 
-    while (1) {
-        /*  send the menu of options the server can offer to client, so the user can
-        *   choose from the client side */
-        rv = send(clientfd, menu, sizeof(menu), 0);
-        if (rv == -1)   {
-            perror("server: send menu");
-            break;
-        }
+    /*  send the menu of options the server can offer to client, so the user can
+    *   choose from the client side */
+    rv = send(clientfd, menu, sizeof(menu), 0);
+    if (rv == -1)   {
+        perror("server: send menu");
+        return -1;
+    }
 
+    while (1) {
         /* We zeroed (reseted) recv_buf, to clean it for the next data coming. */
         memset(recv_buf, 0, RECV_BUF_LEN);
 
