@@ -70,13 +70,13 @@ int main(int argc,char ** argv)
         printf("\nERROR IN RECV\n");
     }
 
+    printf("Menu from server:\n%s\n", menu_buf);
+
     while (1)  {
         memset(send_buf, 0, SEND_BUF_LEN);
         memset(recv_buf, 0, RECV_BUF_LEN);
         memset(expression, 0, sizeof expression);
         memset(choice, 0, 2);
-
-        printf("Menu from server:\n%s\n", menu_buf);
 
         printf("\nplease enter your choice first then your expression:\n");
         rv = fgets(expression, sizeof expression, stdin);
@@ -109,6 +109,8 @@ int main(int argc,char ** argv)
             printf("\nERROR IN RECV\n");
             break;
         }
+
+        if (send_buf[0] == '5') {sprintf(send_buf, "GPA");}
 
         printf("%s = %s (%s:%s)\n", send_buf, recv_buf, argv[1], argv[2]);
     }

@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     }
 
     while(1)    {
-        printf("\n\nwaiting for connections...\n\n");
+        printf("\nwaiting for connections...\n\n");
         memset(&their_addr, 0, sizeof(their_addr));
         sin_size = sizeof their_addr;
 
