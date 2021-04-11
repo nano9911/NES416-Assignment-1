@@ -18,6 +18,7 @@
 
 #define SEND_BUF_LEN 100
 #define RECV_BUF_LEN 100
+#define MENU_BUF_LEN 100
 
 int main(int argc,char ** argv)
 {
@@ -26,6 +27,9 @@ int main(int argc,char ** argv)
     int conntfd,sockfd;                  /*discriptors to reach the sockets*/
     char send_buf[SEND_BUF_LEN];                      /*buffer to write received data in*/
     char recv_buf[RECV_BUF_LEN];                      /*buffer to write sent data in*/
+    char menu_buf[MENU_BUF_LEN];                      /*buffer to save menu from server in*/
+    char choice[2], expression[SEND_BUF_LEN-1];
+    char *rv = 0;
 
     if(argc !=3)                         /*checking the number of arguments entered by the user*/
     {
@@ -60,17 +64,31 @@ int main(int argc,char ** argv)
         exit(1);
     }
 
+    received = recv(sockfd, menu_buf, MENU_BUF_LEN, 0);
+    if (received <= 0)
+    {
+        printf("\nERROR IN RECV\n");
+    }
+
     while (1)  {
         memset(send_buf, 0, SEND_BUF_LEN);
         memset(recv_buf, 0, RECV_BUF_LEN);
-        printf("\nplease enter your expression:\n");
+        memset(expression, 0, sizeof expression);
+        memset(choice, 0, 2);
 
-        if (fgets(send_buf, SEND_BUF_LEN, stdin) == NULL)  /*getting user input*/
+        printf("Menu from server:\n%s\n", menu_buf);
+
+        printf("\nplease enter your choice first then your expression:\n");
+        rv = fgets(expression, sizeof expression, stdin);
+        if (rv == NULL)  /*getting user input*/
         {
             printf("\nERROR IN FGETS\n");
             break;
         }
-        send_buf[strlen(send_buf)-1] = '\0';
+
+        expression[strlen(expression)-1] = '\0';
+
+        sprintf(send_buf, "%s", expression);
 
         sent = send(sockfd, send_buf, strlen(send_buf), 0);     /*sending user message to server*/
         if (sent == -1)
@@ -79,7 +97,7 @@ int main(int argc,char ** argv)
             break;
         }
 
-        if (strcmp(send_buf, "exit") == 0)   /*checking if user want to end connection (exit)*/
+        if (send_buf[0] == '6')   /*checking if user want to end connection (exit)*/
         {
             printf("exiting\n");
             break;
@@ -91,6 +109,7 @@ int main(int argc,char ** argv)
             printf("\nERROR IN RECV\n");
             break;
         }
+
         printf("%s = %s (%s:%s)\n", send_buf, recv_buf, argv[1], argv[2]);
     }
 

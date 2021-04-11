@@ -10,9 +10,10 @@
 #include "socket_handler.h"
 #include "message_handler.h"
 #include <signal.h>
+#include <wait.h>
 
-#define RECV_BUF_LEN 128        // Receive buffer size in bytes
-#define SEND_BUF_LEN 20         // Send buffer size in bytes
+#define RECV_BUF_LEN 512        // Receive buffer size in bytes
+#define SEND_BUF_LEN 512         // Send buffer size in bytes
 
 int listenfd,               /* Server listening socket */
     clientfd;               /* Client handler socket */
@@ -25,12 +26,12 @@ struct sockaddr_storage their_addr;
 /* Will contain the length of the returned address from aacept() syetem call. */
 socklen_t sin_size = sizeof(their_addr);
 
-char menu[] = "1) Add.\n2) Substract.\n3) Divide.\n4) Multiply.\n5) Compute GPA.\n6) Exit.";
+char menu[] = "1) Add.\n2) Substract.\n3) Multiply.\n4) Divide.\n5) Compute GPA.\n6) Exit.";
 
 int client_handler();
 
 void signal_handler(int sig_no)   {
-    int pid, rv;
+    pid_t pid, rv;
     pid = wait(&rv);
     printf("%d child process end with exit code %d\n", pid, rv);
     childcount--;
@@ -51,7 +52,8 @@ int main(int argc, char *argv[])
     /*  After fork it will:
     *   *   Contains children process id in parent.
     *   *   Will be the last value of it before parent called fork in child .  */
-    int pid = 0;
+    pid_t pid = 0;
+    sig_t sig;
     int rv, op=0;
 
     /*  hints -> We will fill it with out server specifications
@@ -71,8 +73,8 @@ int main(int argc, char *argv[])
     CreateSocket(NULL, argv[1], &hints, &listenfd);
 
     /*  Specify a signal handler for SIGCHLD signal */
-    rv = signal(SIGCHLD, signal_handler);
-    if (rv != 0)    {
+    sig = signal(SIGCHLD, signal_handler);
+    if (sig == SIG_ERR)    {
         perror("server: signal");
         exit(1);
     }
@@ -129,10 +131,11 @@ int main(int argc, char *argv[])
 int client_handler()
 {
     char recv_buf[RECV_BUF_LEN], send_buf[SEND_BUF_LEN];
-    int rv, received = 0, result;
+    int rv, received = 0;
+    float result;
 
     /*  choice is the first character from the client message   */
-    enum operations choice = ERR;
+    int choice = ERR;
     char *choices[] = {"ERROR", "ADD", "SUBSTRACT", "MULTIPLY", "DIVISION", "GPA", "EXIT"};
 
     /* Will contain the IP and Port in host byte order of client in their_addr */
@@ -171,7 +174,7 @@ int client_handler()
             {choice = (int)recv_buf[0] - 48;}
 
         recv_buf[0] = ' ';
-        printf("\nclient %s:%s:\tchoice: %s with message: \"%s\" from the\n",
+        printf("\nclient %s:%s:\tchoice: %s with message: \"%s\"\n",
                     peer_name, peer_port, choices[choice], recv_buf);
 
         if (choice == EXIT)   {
@@ -180,21 +183,19 @@ int client_handler()
             break;
         }
  
-        else if (choice != ERR)  {
-            /* Pass the appropriate handler the message. */
-            if (choice == GPA)
-                {rv = handle_gpa(recv_buf, &result, received);}
-            else
-                {rv = handle_msg(recv_buf, received, &result, choice);}
-        }
-        else    {rv = -4;}
+        else if (choice == ERR) {rv = -4;}
+        /* Pass the appropriate handler the message. */
+        else if (choice == GPA)
+            {rv = handle_gpa(recv_buf, &result, received);}
+        else
+            {rv = handle_msg(recv_buf, received, &result, choice);}
 
         if (rv == -1)   {sprintf(send_buf, "Invalid values.");}
         else if (rv == -2)   {sprintf(send_buf, "Invalid opration.");}
         else if (rv == -3)   {sprintf(send_buf, "Division by zero.");}
         else if (rv == -4)   {sprintf(send_buf, "Invalid Choice.");}
         else if (rv == -5)   {sprintf(send_buf, "Invalid GPA List.");}
-        else if (rv == 0)    {sprintf(send_buf, "%d", result);}
+        else if (rv == 0)    {sprintf(send_buf, "%f", result);}
 
         rv = send(clientfd, send_buf, strlen(send_buf), 0);
         printf("Sending \"%s\" to the client\n\n", send_buf);

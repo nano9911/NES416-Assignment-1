@@ -12,8 +12,16 @@
 #define var2(which,var1,var2)  ((which%2) == (0) ? (var1) : (var2))
 
 /* Enumeration values to make the operation more understandable */
-enum operations {ERR=0, ADD=1, MINUS=2, MUL=3, DIV=4, GPA=5, EXIT=6};
+//enum operations {ERR, ADD, MINUS, MUL, DIV, GPA, EXIT};
 
+/* Constants values to make the operation more understandable */
+#define ERR 0
+#define ADD 1
+#define MINUS 2
+#define MUL 3
+#define DIV 4
+#define GPA 5
+#define EXIT 6
 /**
  * @brief Just To make the code clearer, I separated this part from the message handler.
  *  It's responssible to determine if this character represents an operation ( + , - , * , / ).
@@ -21,8 +29,8 @@ enum operations {ERR=0, ADD=1, MINUS=2, MUL=3, DIV=4, GPA=5, EXIT=6};
  * @param op 
  * @return enum operations 
  */
-enum operations decode_operation(char op)   {
-    enum operations ret = ERR;
+int decode_operation(char op)   {
+    int ret = ERR;
     switch (op) {
         case '+':   ret = ADD;  break;
         case '-':   ret = MINUS;    break;
@@ -46,10 +54,10 @@ enum operations decode_operation(char op)   {
  * @return int. If the expression is valid it will return 0, and the result will be passed to 
  *  the variable pointed by argument result.
  */
-int handle_msg(char msg[], int len, int *result, enum operations choice)
+int handle_msg(char msg[], int len, float *result, int choice)
 {
     int x = 0, y = 0, res = 0;
-    enum operations op = ERR;
+    int op = ERR;
 
     /*
      *  If a == 0:
@@ -86,8 +94,7 @@ int handle_msg(char msg[], int len, int *result, enum operations choice)
             else if (i == len-1 || i == 0)    {return -1;}
 
             op = decode_operation(temp);
-            if (op == ERR)    {return -2;}
-            
+            if (op == ERR || op != choice)    {return -4;}
         }
     }
 
@@ -123,35 +130,43 @@ int handle_msg(char msg[], int len, int *result, enum operations choice)
  * @return int. If the expression is valid it will return 0, and the result will be passed to 
  *  the variable pointed by argument result.
  */
-int handle_gpa(char *msg, int *result, int length)
+int handle_gpa(char *msg, float *result, int length)
 {
-    int res=0, v=0, rv=0, m=0, h=0, commas = 0;
+    int v=0, rv=0, m=0, h=0, full_mark=0, commas=0, res=0;
     char eof[2];
+
     /*  end variable will be set to (0xff) hexa value when find the "END OF LIST" (-1).
     *   So, if there's any thing other then spaces after it, we could catch it and return an error (-5) */
     unsigned char end = 0x00;
 
     /*  In this loop we only care about number and commas   */
-    for (int i = 0; i < length; i++)   {
+    for (int i = 0; i < length-1; i++)   {
         if (msg[i] == ' ')  {continue;}
-        if (msg[i] >= '0' || msg[i] <='9' && end == 0x00)  {
+        else if (msg[i] >= '0' && msg[i] <='9')  {
             /*  Use the macro to determine where to put the value    */
-            *(var2(commas, &m, &h)) =+ (int)msg[i] - 48;
+            *(var2(commas, &m, &h)) += (int)msg[i] - 48;
             *(var2(commas, &m, &h)) *= 10;
         }
+
         /*  When we find a comma, we should check, if we had filled 'm' and 'h' variables to use them or not    */
-        else if (msg[i] == ',' && end == 0x00) {
-            *(var2(commas, &m, &h)) /= 10;
-            commas++;
+        else if (msg[i] == ',' || msg[i] == (char)44)   {
+//            *(var2(commas, &m, &h)) /= 10;
+//            commas++;
             if ((commas%2) != 0)    {
+                m /= 10;    h /= 10;
                 v = m * h;
                 res += v;
+                full_mark += (100 * h);
+                /* Use this for debugging */
+                /*printf("\nm = %d, h = %d, v = %d, res = %d, full_mark = %d\n", m, h, v, res, full_mark);*/
                 v = 0; m = 0; h = 0;
             }
+            commas++;
         }
+
         /*  check if we reached the "END OF LIST" (-1)  */
-        else if (msg[i] == '-' && msg[i+1] == '1' && end == 0x00)
-            {end = 0xFF;}
+        else if (msg[i] == '-' && msg[i+1] == '1')
+            {break;}
 
         else    {
             rv = -5;
@@ -159,6 +174,7 @@ int handle_gpa(char *msg, int *result, int length)
         }
     }
 
-    *result = res / ((commas/2) * 100);
+    float f = res;
+    *result = (float)res / (commas+1);
     return rv;
 }
