@@ -1,6 +1,6 @@
 /**
  * @file client.c
- * @author Rou'a Kofahi (JUST ID: 126474)
+ * @authors Rou'a Kofahi (JUST ID: 126474) & Adnan Hleihel (JUST ID: 123423)
  * @brief Main client file of NES416/HW1
  * @date 2021-03-21
  * 
