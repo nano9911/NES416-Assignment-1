@@ -48,6 +48,6 @@ static char	*sock_str_timeval(union val *ptr, int sin_size)  {
 	if (sin_size != sizeof(struct timeval))
 		snprintf(strres, sizeof(strres), "size (%d) not sizeof(struct timeval)", sin_size);
 	else
-		snprintf(strres, sizeof(strres), "%d sec, %d usec", tvptr->tv_sec, tvptr->tv_usec);
+		snprintf(strres, sizeof(strres), "%ld sec, %ld usec", tvptr->tv_sec, tvptr->tv_usec);
 	return(strres);
 }

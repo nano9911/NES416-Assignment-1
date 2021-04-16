@@ -1,8 +1,6 @@
 #include "options.h"
 #include <fcntl.h>
 
-#define var(which,var1,var2)  ((which) == (0) ? (var1) : (var2))
-
 void get_option(struct sock_opts *ptr);
 
 int main(int argc, char **argv)
@@ -15,35 +13,14 @@ int main(int argc, char **argv)
 		get_option(ptr);
 	}
 
-	char input_buf[10];
 	int setsnd=10, setrcv=10, size, getsnd=0, getrcv=0;
 
-/*	printf("Please enter new values for the receive low-water mark and the send low-water mark\
-	 for TCP: ");
-
-	fgets(input_buf, sizeof input_buf, stdin);
-
-	for (int i = 0; i < strlen(input_buf); i++)	{
-		if (input_buf[i] == ' ')	{sw+=1; continue;}
-		if (input_buf[i] >= '0' && input_buf[i] <= '9')	{
-			*(var(sw, &sndlowat, &rcvlowat)) += (int)input_buf[i]-48;
-			*(var(sw, &sndlowat, &rcvlowat)) *= 10;
-		}
-	}
-	if (sw != 1)	{
-		printf("Invalid input, it should be like that: \n\txx yy\nwhere xx is SO_SNDLOWAT and yy is SO_RCVLOWAT\n\n");
-		exit(0);
-	}
-	sndlowat /= 10; rcvlowat /= 10;
+	sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 /*
-	scanf("%d", sndlowat);
-	scanf("%d", rcvlowat);*/
-//	printf("user input: %d %d\n", sndlowat, rcvlowat);
-
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
-	fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL, 0) | O_NONBLOCK);
-
+	if (fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL, 0) | O_NONBLOCK) < 0)	{
+		perror("fcntl() failed with error: ");
+	}
+*/
 	if (setsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT, &setsnd, sizeof(int)) < 0)	{
 		perror("setsockopt(SO_SNDLOWAT) failed with error : ");
 	}
@@ -61,6 +38,7 @@ int main(int argc, char **argv)
 	close(sockfd);
 	exit(0);
 }
+
 
 void get_option(struct sock_opts *ptr)	{
 	int sockfd;
