@@ -17,17 +17,18 @@ int main(int argc, char **argv)
 	int setsnd=10, setrcv=10, size, getsnd=0, getrcv=0;
 
 	sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
-
+/*
 	if (ioctl(sockfd, FIONBIO, (char *)&on) < 0)	{
 		perror("ioctl(FIONBIO) failed with error");
 		printf("errno = %d\n", errno);
 	}
-/*
+
 	if (fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL, 0) | O_NONBLOCK) < 0)	{
 		perror("fcntl() failed with error");
 		printf("errno = %d\n", errno);
 	}
 */
+	printf("\nTrying setsockopt(SO_SNDLOWAT):\n");
 	if (setsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT, &setsnd, sizeof(int)) < 0)	{
 		perror("setsockopt(SO_SNDLOWAT) failed with error");
 		printf("errno = %d\n", errno);
@@ -39,6 +40,7 @@ int main(int argc, char **argv)
 	*ptr = sock_opts[10];
 	get_option(ptr);
 
+	printf("\nTrying setsockopt(SO_RCVLOWAT):\n");
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &setrcv, sizeof(int)) < 0)	{
 		perror("setsockopt(SO_SNDLOWAT) failed with error");
 		printf("errno = %d\n", errno);
