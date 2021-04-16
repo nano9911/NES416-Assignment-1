@@ -1,11 +1,12 @@
 #include "options.h"
 #include <fcntl.h>
+#include <sys/ioctl.h>
 
 void get_option(struct sock_opts *ptr);
 
 int main(int argc, char **argv)
 {
-	int	sockfd;
+	int	sockfd, on=1;
 	struct sock_opts *ptr;
 
 	/* loop on all options and test if they're available */
@@ -16,20 +17,33 @@ int main(int argc, char **argv)
 	int setsnd=10, setrcv=10, size, getsnd=0, getrcv=0;
 
 	sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+
+	if (ioctl(sockfd, FIONBIO, (char *)&on) < 0)	{
+		perror("ioctl(FIONBIO) failed with error");
+		printf("errno = %d\n", errno);
+	}
 /*
 	if (fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL, 0) | O_NONBLOCK) < 0)	{
-		perror("fcntl() failed with error: ");
+		perror("fcntl() failed with error");
+		printf("errno = %d\n", errno);
 	}
 */
 	if (setsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT, &setsnd, sizeof(int)) < 0)	{
-		perror("setsockopt(SO_SNDLOWAT) failed with error : ");
+		perror("setsockopt(SO_SNDLOWAT) failed with error");
+		printf("errno = %d\n", errno);
+		/* get SO_ERROR */
+		*ptr = sock_opts[3];
+		get_option(ptr);
 	}
 
 	*ptr = sock_opts[10];
 	get_option(ptr);
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &setrcv, sizeof(int)) < 0)	{
-		perror("setsockopt(SO_SNDLOWAT) failed with error : ");
+		perror("setsockopt(SO_SNDLOWAT) failed with error");
+		printf("errno = %d\n", errno);
+		*ptr = sock_opts[3];
+		get_option(ptr);
 	}
 
 	*ptr = sock_opts[9];
@@ -71,7 +85,7 @@ void get_option(struct sock_opts *ptr)	{
 		#endif
 
 			default:
-				sprintf(err, "Can't create sockfd for level: %d, opt_name: %s\n", ptr->opt_level, ptr->opt_str);
+				sprintf(err, "Can't create sockfd for level: %d, opt_name: %s", ptr->opt_level, ptr->opt_str);
 				perror(err);
 		}
 
