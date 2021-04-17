@@ -2,7 +2,6 @@
 
 **By:**
 - Adnan Omar [@nano9911](https://github.com/nano9911) (JUST ID:123423)
-- Roua Kofahi [@rouakofahi](https://github.com/rouakofahi) (JUST ID: 126474)
 
 This repository is for our NES416 [ Network Programming course ] Assignments in 2020/2021 2nd Semester.
 
