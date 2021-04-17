@@ -1,3 +1,12 @@
+/**
+ * @file sockopt.c
+ * @author Adnan Omar (JUST ID: 123423)
+ * @brief NES416-Assignment#3, get all sockets options and change SO_SNDLOWAT and SO_RCVLOWAT values
+ * 			this file contains all options.
+ * @date 2021-04-17
+ * 
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
