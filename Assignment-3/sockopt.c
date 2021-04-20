@@ -26,7 +26,8 @@ void get_option(struct sock_opts *ptr);
 
 int main(int argc, char **argv)
 {
-	int	sockfd, rv=0, size=sizeof(int);
+	int	sockfd, rv=0;
+	socklen_t size=sizeof(int);
 	/* used to set SO_SNDLOWAT and SO_RCVLOWAT values */
 	int setsnd=32, setrcv=128;
 	/* used to compare SO_SNDLOWAT and SO_RCVLOWAT values before setsokopt() and after*/
@@ -96,9 +97,9 @@ int main(int argc, char **argv)
 	}
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &setrcv, sizeof(int)) == -1)
-		{perror("\nsetsockopt SOL_SOCKET, SO_RCVLOWAT");}
+		{perror("\n\nsetsockopt SOL_SOCKET, SO_RCVLOWAT");}
 	else	{
-		printf("\nsetsockopt SOL_SOCKET, SO_RCVLOWAT: Succeeded.");
+		printf("\n\nsetsockopt SOL_SOCKET, SO_RCVLOWAT: Succeeded.");
 		if (getsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &cur_rcv_val, &size) == -1)
 			{perror("\ngetsockopt SOL_SOCKET, SO_RCVLOWAT");}
 
