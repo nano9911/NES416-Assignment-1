@@ -22,7 +22,6 @@
 int socket_nonblock_option();
 int socket_nonblock_ioctl();
 int socket_nonblock_fcntl();
-void get_option(struct sock_opts *ptr);
 
 int main(int argc, char **argv)
 {
@@ -119,7 +118,12 @@ int main(int argc, char **argv)
 	exit(0);
 }
 
-
+/**
+ * @brief a method to make a socket in nonblocking mode, by oring
+ * SOCK_NONBLOCK with SOCK_STREAM in (type) argument of socket().
+ * 
+ * @return int 
+ */
 int socket_nonblock_option()	{
 	int sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (sockfd == -1)	{
@@ -130,6 +134,13 @@ int socket_nonblock_option()	{
 	return sockfd;
 }
 
+/**
+ * @brief a method to make a socket in nonblocking mode, using
+ * ioctl() with setting option FIONBIO to 1in case of linux or freebsd,
+ * or option _IONBF in case of solaris.
+ * 
+ * @return int 
+ */
 int socket_nonblock_ioctl()	{
 	int sockfd, on=1;
 
@@ -153,6 +164,13 @@ int socket_nonblock_ioctl()	{
 	return sockfd;
 }
 
+/**
+ * @brief a method to make a socket in nonblocking mode, using
+ * fcntl() with option O_NONBLOCK in case of linux or freebsd,
+ * or option FNDELAY in case of solaris.
+ * 
+ * @return int 
+ */
 int socket_nonblock_fcntl()	{
 	int sockfd, flags;
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)	{
@@ -186,64 +204,4 @@ int socket_nonblock_fcntl()	{
 #endif
 
 	return sockfd;
-}
-
-
-void get_option(struct sock_opts *ptr)	{
-	int sockfd;
-	socklen_t sin_size;
-	char err[50], msg[20];
-
-	printf("\t%s: ", ptr->opt_str);
-
-	if (ptr->opt_val_str == UNDEFINED)
-		printf("(undefined)\n");
-
-	else {
-		switch(ptr->opt_level) {
-			case SOL_SOCKET:
-			case IPPROTO_IP:
-			case IPPROTO_TCP:
-				sockfd = socket(AF_INET, SOCK_STREAM, 0);
-				break;
-		#ifdef	IPPROTO_IPV6
-			case IPPROTO_IPV6:
-				sockfd = socket(AF_INET6, SOCK_STREAM, 0);
-				break;
-		#endif
-		#ifdef	IPPROTO_SCTP
-			case IPPROTO_SCTP:
-				sockfd = socket(AF_INET, SOCK_SEQPACKET, IPPROTO_SCTP);
-				break;
-		#endif
-			default:
-				fprintf(stderr, "unknown %d level", ptr->opt_level);
-				return;
-			}
-
-			sin_size = sizeof(val);
-			if (getsockopt(sockfd, ptr->opt_level, ptr->opt_name, &val, &sin_size) == -1) {
-				perror("getsockopt error");
-			}
-
-			else {
-				switch (ptr->opt_val_str)	{
-					case FLAG:
-						snprintf(msg, sizeof(msg), "%s", sock_str_flag(&val, sin_size));
-						break;
-					case INTEGER:
-						snprintf(msg, sizeof(msg), "%s", sock_str_int(&val, sin_size));
-						break;
-					case LINGER:
-						snprintf(msg, sizeof(msg), "%s", sock_str_linger(&val, sin_size));
-						break;
-					case TIMEVAL:
-						snprintf(msg, sizeof(msg), "%s", sock_str_timeval(&val, sin_size));
-						break;
-				}
-				printf("default = %s\n", msg);
-			}
-		close(sockfd);
-	}
-	return;
 }
