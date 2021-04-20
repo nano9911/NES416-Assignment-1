@@ -1,8 +1,9 @@
 /**
  * @file sockopt.c
  * @author Adnan Omar (JUST ID: 123423)
- * @brief NES416-Assignment#3, get all sockets options and change SO_SNDLOWAT and SO_RCVLOWAT values
- * 			this file is for option value filtering for printing.
+ * @brief NES416-Assignment#3, get all sockets options and
+ * 			change SO_SNDLOWAT and SO_RCVLOWAT values.
+ * 		This file is for option value filtering for printing.
  * @date 2021-04-17
  * 
  */

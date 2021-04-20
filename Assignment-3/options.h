@@ -1,8 +1,9 @@
 /**
  * @file sockopt.c
  * @author Adnan Omar (JUST ID: 123423)
- * @brief NES416-Assignment#3, get all sockets options and change SO_SNDLOWAT and SO_RCVLOWAT values
- * 			this file contains all options.
+ * @brief NES416-Assignment#3, get all sockets options and 
+ * 			change SO_SNDLOWAT and SO_RCVLOWAT values.
+ * 		This file contains all options.
  * @date 2021-04-17
  * 
  */
@@ -33,21 +34,29 @@ struct sock_opts {
 	{ "SO_OOBINLINE",		SOL_SOCKET,	SO_OOBINLINE,	sock_str_flag },
 	{ "SO_RCVBUF",			SOL_SOCKET,	SO_RCVBUF,		sock_str_int },
 	{ "SO_SNDBUF",			SOL_SOCKET,	SO_SNDBUF,		sock_str_int },
+#ifdef SO_RCVLOWAT
 	{ "SO_RCVLOWAT",		SOL_SOCKET,	SO_RCVLOWAT,	sock_str_int },
+#else
+	{ "SO_RCVLOWAT",		-1,			0,				NULL },
+#endif
+#ifdef SO_SNDLOWAT
 	{ "SO_SNDLOWAT",		SOL_SOCKET,	SO_SNDLOWAT,	sock_str_int },
+#else
+	{ "SO_SNDLOWAT",		-1,			0,				NULL },
+#endif
 	{ "SO_RCVTIMEO",		SOL_SOCKET,	SO_RCVTIMEO,	sock_str_timeval },
 	{ "SO_SNDTIMEO",		SOL_SOCKET,	SO_SNDTIMEO,	sock_str_timeval },
 	{ "SO_REUSEADDR",		SOL_SOCKET,	SO_REUSEADDR,	sock_str_flag },
 #ifdef	SO_REUSEPORT
 	{ "SO_REUSEPORT",		SOL_SOCKET,	SO_REUSEPORT,	sock_str_flag },
 #else
-	{ "SO_REUSEPORT",		0,			0,				NULL },
+	{ "SO_REUSEPORT",		-1,			0,				NULL },
 #endif
 	{ "SO_TYPE",			SOL_SOCKET,	SO_TYPE,		sock_str_int },
 #ifdef SO_USELOOPBACK
 	{ "SO_USELOOPBACK",		SOL_SOCKET,	SO_USELOOPBACK,	sock_str_flag },
 #else
-	{ "SO_USELOOPBACK",		0,			0,				NULL },
+	{ "SO_USELOOPBACK",		-1,			0,				NULL },
 #endif
 
 	/* IPPROTO_IP options */
@@ -60,17 +69,17 @@ struct sock_opts {
 	#ifdef	IPV6_DONTFRAG
 	{ "IPV6_DONTFRAG",		IPPROTO_IPV6,IPV6_DONTFRAG,	sock_str_flag },
 	#else
-	{ "IPV6_DONTFRAG",		0,			0,				NULL },
+	{ "IPV6_DONTFRAG",		-1,			0,				NULL },
 	#endif
 	#ifdef	IPV6_UNICAST_HOPS
 	{ "IPV6_UNICAST_HOPS",	IPPROTO_IPV6,IPV6_UNICAST_HOPS,sock_str_int },
 	#else
-	{ "IPV6_UNICAST_HOPS",	0,			0,				NULL },
+	{ "IPV6_UNICAST_HOPS",	-1,			0,				NULL },
 	#endif
 	#ifdef	IPV6_V6ONLY
 	{ "IPV6_V6ONLY",		IPPROTO_IPV6,IPV6_V6ONLY,	sock_str_flag },
 	#else
-	{ "IPV6_V6ONLY",		0,			0,				NULL },
+	{ "IPV6_V6ONLY",		-1,			0,				NULL },
 	#endif
 #endif
 
@@ -84,23 +93,23 @@ struct sock_opts {
 	#ifdef	SCTP_AUTOCLOSE
 	{ "SCTP_AUTOCLOSE",		IPPROTO_SCTP,SCTP_AUTOCLOSE,sock_str_int },
 	#else
-	{ "SCTP_AUTOCLOSE",		0,			0,				NULL },
+	{ "SCTP_AUTOCLOSE",		-1,			0,				NULL },
 	#endif
 	#ifdef	SCTP_MAXBURST
 	{ "SCTP_MAXBURST",		IPPROTO_SCTP,SCTP_MAXBURST,	sock_str_int },
 	#else
-	{ "SCTP_MAXBURST",		0,			0,				NULL },
+	{ "SCTP_MAXBURST",		-1,			0,				NULL },
 	#endif
 	#ifdef	SCTP_MAXSEG
 	{ "SCTP_MAXSEG",		IPPROTO_SCTP,SCTP_MAXSEG,	sock_str_int },
 	#else
-	{ "SCTP_MAXSEG",		0,			0,				NULL },
+	{ "SCTP_MAXSEG",		-1,			0,				NULL },
 	#endif
 	#ifdef	SCTP_NODELAY
 	{ "SCTP_NODELAY",		IPPROTO_SCTP,SCTP_NODELAY,	sock_str_flag },
 	#else
-	{ "SCTP_NODELAY",		0,			0,				NULL },
+	{ "SCTP_NODELAY",		-1,			0,				NULL },
 	#endif
-	{ NULL,					0,			0,				NULL }
+//	{ NULL,					-1,			0,				NULL }
 #endif
 };
