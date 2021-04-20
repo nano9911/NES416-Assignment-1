@@ -18,7 +18,6 @@
 #include <netinet/tcp.h>		/* for TCP_xxx defines */
 #include "option_filtering.h"
 
-enum type {UNDEFINED, FLAG, INTEGER, LINGER, TIMEVAL};
 
 struct sock_opts {
   const char *opt_str;

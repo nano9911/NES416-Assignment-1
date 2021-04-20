@@ -27,10 +27,11 @@ void get_option(struct sock_opts *ptr);
 int main(int argc, char **argv)
 {
 	int	sockfd, rv=0;
-	socklen_t size=sizeof(int);
+	socklen_t size=16;
 	/* used to set SO_SNDLOWAT and SO_RCVLOWAT values */
 	int setsnd=32, setrcv=128;
-	/* used to compare SO_SNDLOWAT and SO_RCVLOWAT values before setsokopt() and after*/
+	/* used to compare SO_SNDLOWAT and SO_RCVLOWAT values
+	   before setsokopt() and after*/
 	int past_snd_val, past_rcv_val, cur_snd_val, cur_rcv_val;
 	struct sock_opts *ptr;
 	struct utsname buf;
@@ -40,8 +41,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	printf("System info:\n%s %s %s %s %s\n\n", buf.sysname, buf.nodename,
-	                                buf.release, buf.version, buf.machine);
+	printf("System info:\n%s %s %s %s %s\n\n", buf.sysname,
+	    buf.nodename, buf.release, buf.version, buf.machine);
 
 	/* loop on all options and test if they're available */
 	for (ptr = sock_opts; ptr->opt_str != NULL; ptr++)
@@ -73,42 +74,46 @@ int main(int argc, char **argv)
 
    	/*************************************************************/
 	/* getting current SO_SNDLOWAT and SO_RCVLOWAT values to     */
-	/* compare after setsockopt() */
-	if (getsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT, &past_snd_val, &size) == -1)
+	/* compare after setsockopt()                                */
+	if (getsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT,
+	                    &past_snd_val, &size) == -1)
 		{perror("\ngetsockopt SOL_SOCKET, SO_SNDLOWAT");}
 
-	if (getsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &past_rcv_val, &size) == -1)
+	if (getsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT,
+	                    &past_rcv_val, &size) == -1)
 		{perror("\ngetsockopt SOL_SOCKET, SO_RCVLOWAT");}
 
-	printf("\nPast values: SO_SNDLOWAT=%d, SO_RCVLOWAT=%d\n",past_snd_val ,past_rcv_val);
+	printf("\nPast values: SO_SNDLOWAT=%d, SO_RCVLOWAT=%d\n",
+	                              past_snd_val ,past_rcv_val);
    	/*************************************************************/
 
-	if (setsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT, &setsnd, sizeof(int)) == -1)
+	if (setsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT, &setsnd,
+	                                      sizeof(int)) == -1)
 		{perror("\nsetsockopt SOL_SOCKET, SO_SNDLOWAT");}
 	else	{
 		printf("\nsetsockopt SOL_SOCKET, SO_SNDLOWAT: Succeeded.");
-		if (getsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT, &cur_snd_val, &size) == -1)
+		if (getsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT,
+                              &cur_snd_val, &size) == -1)
 			{perror("\ngetsockopt SOL_SOCKET, SO_SNDLOWAT");}
 
-		if (past_snd_val == cur_snd_val)	{printf("But, value didn't change.\n");}
+		if (past_snd_val == cur_snd_val)
+			{printf("But, value didn't change.\n");}
 		printf("\nCurrent SO_SNDLOWAT value: %d\n", cur_snd_val);
-//		*ptr = sock_opts[10];
-//		get_option(ptr);
 	}
 
-	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &setrcv, sizeof(int)) == -1)
+	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &setrcv,
+	                                       sizeof(int)) == -1)
 		{perror("\nsetsockopt SOL_SOCKET, SO_RCVLOWAT");}
 	else	{
 		printf("\nsetsockopt SOL_SOCKET, SO_RCVLOWAT: Succeeded.");
-		if (getsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &cur_rcv_val, &size) == -1)
+		if (getsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT,
+		                       &cur_rcv_val, &size) == -1)
 			{perror("\ngetsockopt SOL_SOCKET, SO_RCVLOWAT");}
 
-		if (past_rcv_val == cur_rcv_val)	{printf(" But, value didn't change.\n");}
+		if (past_rcv_val == cur_rcv_val)
+			{printf(" But, value didn't change.\n");}
 		printf("\nCurrent SO_RCVLOWAT value: %d\n", cur_rcv_val);
-//		*ptr = sock_opts[9];
-//		get_option(ptr);
 	}
-
 
 	close(sockfd);
 	exit(0);
@@ -219,7 +224,9 @@ void get_option(struct sock_opts *ptr)	{
 			sin_size = sizeof(val);
 			if (getsockopt(sockfd, ptr->opt_level, ptr->opt_name, &val, &sin_size) == -1) {
 				perror("getsockopt error");
-			} else {
+			}
+
+			else {
 				switch (ptr->opt_val_str)	{
 					case FLAG:
 						snprintf(msg, sizeof(msg), "%s", sock_str_flag(&val, sin_size));

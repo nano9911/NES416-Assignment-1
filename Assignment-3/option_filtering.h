@@ -12,6 +12,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+
+enum type {UNDEFINED, FLAG, INTEGER, LINGER, TIMEVAL};
+
 union val {
   int				i_val;
   long				l_val;
@@ -61,3 +64,5 @@ static char	*sock_str_timeval(union val *ptr, int sin_size)  {
 		snprintf(strres, sizeof(strres), "%ld sec, %ld usec", tvptr->tv_sec, tvptr->tv_usec);
 	return(strres);
 }
+
+
