@@ -47,6 +47,7 @@ int main(int argc, char **argv)
 	for (ptr = sock_opts; ptr->opt_str != NULL; ptr++)
 		{get_option(ptr);}
 
+#if (defined __linux__ || defined __FreeBSD__)
 	/*************************************************************/
    	/* To create a non blocking AF_INET stream socket,           */
 	/* we have two options:                                      */
@@ -115,6 +116,10 @@ int main(int argc, char **argv)
 	}
 
 	close(sockfd);
+#elif defined __sun__
+	printf("\nSolaris doesn't support SO_SNDLOWAT and SO_RCVLOWAT\n");
+#endif /*(defined __linux__ || defined __FreeBSD__)*/
+
 	exit(0);
 }
 
