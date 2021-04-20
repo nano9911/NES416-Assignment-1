@@ -1,4 +1,4 @@
-# NES 416 Assignment #2
+# NES 416 Assignment #3
 >[Link to project](https://github.com/nano9911/NES416-Assignments/tree/main/Assignment-3)
 
 **By:**
