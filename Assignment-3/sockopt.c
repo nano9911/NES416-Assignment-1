@@ -13,7 +13,7 @@
 #include <sys/ioctl.h>
 #include <sys/utsname.h>
 
-#if !(defined linux || !defined __FreeBSD__)
+#if !(defined linux || defined __FreeBSD__)
 #include <unistd.h>
 #include <stropts.h>
 #include <sys/file.h>
