@@ -26,7 +26,11 @@ void get_option(struct sock_opts *ptr);
 
 int main(int argc, char **argv)
 {
-	int	sockfd, rv=0, setsnd=32, setrcv=128;
+	int	sockfd, rv=0, size=sizeof(int);
+	/* used to set SO_SNDLOWAT and SO_RCVLOWAT values */
+	int setsnd=32, setrcv=128;
+	/* used to compare SO_SNDLOWAT and SO_RCVLOWAT values before setsokopt() and after*/
+	int past_snd_val, past_rcv_val, cur_snd_val, cur_rcv_val;
 	struct sock_opts *ptr;
 	struct utsname buf;
 	
@@ -35,7 +39,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	printf("System info:\n%s %s %s %s %s\n\n", buf.sysname, buf.nodename, buf.release, buf.version, buf.machine);
+	printf("System info:\n%s %s %s %s %s\n\n", buf.sysname, buf.nodename,
+	                                buf.release, buf.version, buf.machine);
 
 	/* loop on all options and test if they're available */
 	for (ptr = sock_opts; ptr->opt_str != NULL; ptr++)
@@ -50,11 +55,11 @@ int main(int argc, char **argv)
 //	sockfd = socket_nonblock_option();
 	/*                                                           */
 	/*                                                           */
-	/* - with SOCK_STREAM, in this case we will use ioctl()      */
-	sockfd = socket_nonblock_ioctl();
+	/* - with SOCK_STREAM, with ioctl()                          */
+//	sockfd = socket_nonblock_ioctl();
 	/*                                                           */
-	/* or fcntl().                                               */
-//	sockfd = socket_nonblock_fcntl();
+	/* - with SOCK_STREAM, with fcntl()                          */
+	sockfd = socket_nonblock_fcntl();
 	/*                                                           */
 	/*                                                           */
 	/* Important:                                                */
@@ -65,23 +70,45 @@ int main(int argc, char **argv)
 	/* - uncomment one to use the other one                      */
    	/*************************************************************/
 
+   	/*************************************************************/
+	/* getting current SO_SNDLOWAT and SO_RCVLOWAT values to     */
+	/* compare after setsockopt() */
+	if (getsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT, &past_snd_val, &size) == -1)
+		{perror("\ngetsockopt SOL_SOCKET, SO_SNDLOWAT");}
+
+	if (getsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &past_rcv_val, &size) == -1)
+		{perror("\ngetsockopt SOL_SOCKET, SO_RCVLOWAT");}
+
+	printf("\nPast values: SO_SNDLOWAT=%d, SO_RCVLOWAT=%d",past_snd_val ,past_rcv_val);
+   	/*************************************************************/
+
 	if (setsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT, &setsnd, sizeof(int)) == -1)
 		{perror("\nsetsockopt SOL_SOCKET, SO_SNDLOWAT");}
 	else	{
-		printf("\nsetsockopt SOL_SOCKET, SO_SNDLOWAT: Succeeded\n");
-		printf("Current SO_SNDLOWAT value: ");
-		*ptr = sock_opts[10];
-		get_option(ptr);
+		printf("\nsetsockopt SOL_SOCKET, SO_SNDLOWAT: Succeeded.");
+		if (getsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT, &cur_snd_val, &size) == -1)
+			{perror("\ngetsockopt SOL_SOCKET, SO_SNDLOWAT");}
+
+		if (past_snd_val == cur_snd_val)	{printf("But, value didn't change.\n");}
+		printf("\nCurrent SO_SNDLOWAT value: %d\n", cur_snd_val);
+//		*ptr = sock_opts[10];
+//		get_option(ptr);
 	}
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &setrcv, sizeof(int)) == -1)
 		{perror("\nsetsockopt SOL_SOCKET, SO_RCVLOWAT");}
 	else	{
-		printf("\nsetsockopt SOL_SOCKET, SO_RCVLOWAT: Succeeded\n");
-		printf("Current SO_RCVLOWAT value: ");
-		*ptr = sock_opts[9];
-		get_option(ptr);
+		printf("\nsetsockopt SOL_SOCKET, SO_RCVLOWAT: Succeeded.");
+		if (getsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &cur_rcv_val, &size) == -1)
+			{perror("\ngetsockopt SOL_SOCKET, SO_RCVLOWAT");}
+
+		if (past_rcv_val == cur_rcv_val)	{printf(" But, value didn't change.\n");}
+		printf("\nCurrent SO_RCVLOWAT value: %d\n", cur_rcv_val);
+//		*ptr = sock_opts[9];
+//		get_option(ptr);
 	}
+
+
 	close(sockfd);
 	exit(0);
 }
@@ -159,11 +186,11 @@ int socket_nonblock_fcntl()	{
 void get_option(struct sock_opts *ptr)	{
 	int sockfd;
 	socklen_t sin_size;
-	char err[50];
+	char err[50], msg[20];
 
 	printf("\t%s: ", ptr->opt_str);
 
-	if (ptr->opt_val_str == NULL)
+	if (ptr->opt_val_str == UNDEFINED)
 		printf("(undefined)\n");
 
 	else {
@@ -192,7 +219,21 @@ void get_option(struct sock_opts *ptr)	{
 			if (getsockopt(sockfd, ptr->opt_level, ptr->opt_name, &val, &sin_size) == -1) {
 				perror("getsockopt error");
 			} else {
-				printf("default = %s\n", (*ptr->opt_val_str)(&val, sin_size));
+				switch (ptr->opt_val_str)	{
+					case FLAG:
+						snprintf(msg, sizeof(msg), "%s", sock_str_flag(&val, sin_size));
+						break;
+					case INTEGER:
+						snprintf(msg, sizeof(msg), "%s", sock_str_int(&val, sin_size));
+						break;
+					case LINGER:
+						snprintf(msg, sizeof(msg), "%s", sock_str_linger(&val, sin_size));
+						break;
+					case TIMEVAL:
+						snprintf(msg, sizeof(msg), "%s", sock_str_timeval(&val, sin_size));
+						break;
+				}
+				printf("default = %s\n", msg);
 			}
 		close(sockfd);
 	}
