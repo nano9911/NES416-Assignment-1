@@ -14,12 +14,17 @@
 #include <sys/utsname.h>
 
 // in case of solaris, and you used fcntl(), uncomment this line
-//#include <sys/file.h>
+//
+#ifdef SUN
+#include <unistd.h>
+#include <stropts.h>
+#include <sys/file.h>
+#endif
 
-void get_option(struct sock_opts *ptr);
 int socket_nonblock_option();
 int socket_nonblock_ioctl();
 int socket_nonblock_fcntl();
+void get_option(struct sock_opts *ptr);
 
 int main(int argc, char **argv)
 {
@@ -59,10 +64,10 @@ int main(int argc, char **argv)
 	/*															 */
 	/*															 */
 	/* - with SOCK_STREAM, in this case we will use ioctl()      */
-//	sockfd = socket_nonblock_ioctl();
+	sockfd = socket_nonblock_ioctl();
 	/*															 */
 	/* or fcntl().						     					 */
-	sockfd = socket_nonblock_fcntl();
+//	sockfd = socket_nonblock_fcntl();
 	/*															 */
 	/*															 */
 	/* Important:												 */
@@ -120,13 +125,19 @@ int socket_nonblock_ioctl()	{
 		perror("socket AF_INET, SOCK_STREAM");
 		exit(0);
 	}
-
+#if defined linux || defined freebsd
 	if (ioctl(sockfd, FIONBIO, (char *)&on) == -1)	{
 		perror("ioctl FIONBIO, 1");
 		printf("errno = %d\n", errno);
 	}
 	else	{printf("\n\nioctl FIONBIO, 1: succeeded\n");}
-
+#elif defined SUN
+	if (ioctl(sockfd, _IONBF, (char *)&on) == -1)	{
+		perror("ioctl _IONBF, 1");
+		printf("errno = %d\n", errno);
+	}
+	else	{printf("\n\nioctl _IONBF, 1: succeeded\n");}
+#endif
 	return sockfd;
 }
 
