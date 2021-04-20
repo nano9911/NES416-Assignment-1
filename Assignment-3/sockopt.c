@@ -13,7 +13,7 @@
 #include <sys/ioctl.h>
 #include <sys/utsname.h>
 
-#if !(defined linux || !defined freebsd)
+#if !(defined linux || !defined __FreeBSD__)
 #include <unistd.h>
 #include <stropts.h>
 #include <sys/file.h>
@@ -104,7 +104,7 @@ int socket_nonblock_ioctl()	{
 		perror("socket AF_INET, SOCK_STREAM");
 		exit(0);
 	}
-#if (defined linux || defined freebsd)
+#if (defined linux || defined __FreeBSD__)
 	if (ioctl(sockfd, FIONBIO, (char *)&on) == -1)	{
 		perror("ioctl FIONBIO, 1");
 		printf("errno = %d\n", errno);
@@ -133,7 +133,7 @@ int socket_nonblock_fcntl()	{
 		printf("errno = %d\n", errno);		
 	}
 
-#if (defined linux || defined freebsd)
+#if (defined linux || defined __FreeBSD__)
 	/* In case of Linux or FreeBSD use that if statement, and	 */
 	/* uncomment the next one.									 */
 	if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == -1)	{
