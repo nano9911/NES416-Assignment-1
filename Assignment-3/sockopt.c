@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 	if (getsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &past_rcv_val, &size) == -1)
 		{perror("\ngetsockopt SOL_SOCKET, SO_RCVLOWAT");}
 
-	printf("\nPast values: SO_SNDLOWAT=%d, SO_RCVLOWAT=%d",past_snd_val ,past_rcv_val);
+	printf("\nPast values: SO_SNDLOWAT=%d, SO_RCVLOWAT=%d\n",past_snd_val ,past_rcv_val);
    	/*************************************************************/
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT, &setsnd, sizeof(int)) == -1)
@@ -97,9 +97,9 @@ int main(int argc, char **argv)
 	}
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &setrcv, sizeof(int)) == -1)
-		{perror("\n\nsetsockopt SOL_SOCKET, SO_RCVLOWAT");}
+		{perror("\nsetsockopt SOL_SOCKET, SO_RCVLOWAT");}
 	else	{
-		printf("\n\nsetsockopt SOL_SOCKET, SO_RCVLOWAT: Succeeded.");
+		printf("\nsetsockopt SOL_SOCKET, SO_RCVLOWAT: Succeeded.");
 		if (getsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &cur_rcv_val, &size) == -1)
 			{perror("\ngetsockopt SOL_SOCKET, SO_RCVLOWAT");}
 
