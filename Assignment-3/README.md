@@ -15,7 +15,7 @@ should take two integers from user and assign them to SO_SNDLOWAT and SO_RCVLOWA
 Attach screenshots of running program output. User input in screenshots should make sense.
 
 ## Important Notes
-### Used Non-Blocking Socket Methods
+### Methods Used to Make a Socket Non-Blocking
 I have written 3 methods to put a socket in Non-Blocking mode, the socket is created to change it's SO_SNDLOWAT and SO_RCVLOWAT options.
 The 3 methods are:
 #### 1. Using SOCK_NONBLOCK type with SOCK_STREAM in socket() function.
