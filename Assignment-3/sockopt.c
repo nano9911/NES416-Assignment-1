@@ -13,7 +13,7 @@
 #include <sys/ioctl.h>
 #include <sys/utsname.h>
 
-#if !(defined __linux__ || defined __FreeBSD__)
+#ifdef __sun__
 #include <unistd.h>
 #include <stropts.h>
 #include <sys/file.h>
@@ -110,7 +110,7 @@ int socket_nonblock_ioctl()	{
 		printf("errno = %d\n", errno);
 	}
 	else	{printf("\n\nioctl FIONBIO, 1: succeeded\n");}
-#else
+#elif defined __sun__
 	if (ioctl(sockfd, _IONBF, (char *)&on) == -1)	{
 		perror("ioctl _IONBF, 1");
 		printf("errno = %d\n", errno);
@@ -142,7 +142,7 @@ int socket_nonblock_fcntl()	{
 	}
 	else	{printf("\n\nfcntl F_SETFL, O_NONBLOCK: succeeded\n");}
 
-#else
+#elif defined __sun__
 	/* In case of Solaris uncomment this if statement, and		 */
 	/* comment out the past if statement						 */
 	if (fcntl(sockfd, F_SETFL, flags | FNDELAY) == -1)	{
@@ -184,9 +184,8 @@ void get_option(struct sock_opts *ptr)	{
 				break;
 		#endif
 			default:
-				sprintf(err, "unknown %d level", ptr->opt_level);
-				perror(err);
-					return;
+				fprintf(stderr, "unknown %d level", ptr->opt_level);
+				return;
 			}
 
 			sin_size = sizeof(val);
