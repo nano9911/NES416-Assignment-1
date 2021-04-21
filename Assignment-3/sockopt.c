@@ -79,6 +79,9 @@ int main(int argc, char **argv)
 	/* - comment out two and uncomment one to use the other one  */
    	/*************************************************************/
 	/* getting user input:                                       */
+	printf("\nPlease enter new values for the receive low-water\
+mark and the send low-water mark for TCP:\n");
+
 	scanf("%d", &setsnd); scanf("%d", &setrcv);
    	/*************************************************************/
 
