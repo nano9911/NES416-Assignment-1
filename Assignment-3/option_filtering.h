@@ -4,7 +4,7 @@
  * @brief NES416-Assignment#3, get all sockets options and
  * 			change SO_SNDLOWAT and SO_RCVLOWAT values.
  * 		This file is for option value filtering for printing.
- * @date 2021-04-17
+ * @date 2021-04-21
  * 
  */
 
@@ -22,13 +22,20 @@ union val {
   struct timeval	timeval_val;
 } val;
 
-static char	*sock_str_flag(union val *, int);
-static char	*sock_str_int(union val *, int);
-static char	*sock_str_linger(union val *, int);
-static char	*sock_str_timeval(union val *, int);
+static char	*sock_str_flag(union val *, int sin_size);
+static char	*sock_str_int(union val *, int sin_size);
+static char	*sock_str_linger(union val *, int sin_size);
+static char	*sock_str_timeval(union val *, int sin_size);
 
 static char	strres[128];
 
+/**
+ * @brief convert flag value to string after checking it, then and return it
+ * 
+ * @param val : value returned from getsockopt()
+ * @param sin_size : size of val returned from getsockopt()
+ * @return char* 
+ */
 static char	*sock_str_flag(union val *ptr, int sin_size) {
 	if (sin_size != sizeof(int))
 		snprintf(strres, sizeof(strres), "size (%d) not sizeof(int)", sin_size);
@@ -37,6 +44,13 @@ static char	*sock_str_flag(union val *ptr, int sin_size) {
 	return(strres);
 }
 
+/**
+ * @brief convert int value to string after checking it, then and return it
+ * 
+ * @param val : value returned from getsockopt()
+ * @param sin_size : size of val returned from getsockopt()
+ * @return char* 
+ */
 static char	*sock_str_int(union val *ptr, int sin_size)  {
 	if (sin_size != sizeof(int))
 		snprintf(strres, sizeof(strres), "size (%d) not sizeof(int)", sin_size);
@@ -45,6 +59,13 @@ static char	*sock_str_int(union val *ptr, int sin_size)  {
 	return(strres);
 }
 
+/**
+ * @brief convert linger value to string after checking it, then and return it
+ * 
+ * @param val : value returned from getsockopt()
+ * @param sin_size : size of val returned from getsockopt()
+ * @return char* 
+ */
 static char	*sock_str_linger(union val *ptr, int sin_size)   {
 	struct linger	*lptr = &ptr->linger_val;
 
@@ -55,6 +76,13 @@ static char	*sock_str_linger(union val *ptr, int sin_size)   {
 	return(strres);
 }
 
+/**
+ * @brief convert timeval value to string after checking it, then and return it
+ * 
+ * @param val : value returned from getsockopt()
+ * @param sin_size : size of val returned from getsockopt()
+ * @return char* 
+ */
 static char	*sock_str_timeval(union val *ptr, int sin_size)  {
 	struct timeval	*tvptr = &ptr->timeval_val;
 

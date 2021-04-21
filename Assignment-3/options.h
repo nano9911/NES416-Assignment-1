@@ -4,7 +4,7 @@
  * @brief NES416-Assignment#3, get all sockets options and 
  * 			change SO_SNDLOWAT and SO_RCVLOWAT values.
  * 		This file contains all options.
- * @date 2021-04-17
+ * @date 2021-04-21
  * 
  */
 
@@ -40,12 +40,12 @@ struct sock_opts {
 	{ "SO_RCVLOWAT",        SOL_SOCKET,	SO_RCVLOWAT,     INTEGER },
 #else
 	{ "SO_RCVLOWAT",        0,0,UNDEFINED },
-#endif
+#endif /*(defined SO_RCVLOWAT && !defined __sun__)*/
 #if (defined SO_SNDLOWAT && !defined __sun__)
 	{ "SO_SNDLOWAT",        SOL_SOCKET,	SO_SNDLOWAT,     INTEGER },
 #else
 	{ "SO_SNDLOWAT",        0,0,UNDEFINED },
-#endif
+#endif /*(defined SO_SNDLOWAT && !defined __sun__)*/
 	{ "SO_RCVTIMEO",        SOL_SOCKET,	SO_RCVTIMEO, TIMEVAL },
 	{ "SO_SNDTIMEO",        SOL_SOCKET,	SO_SNDTIMEO, TIMEVAL },
 	{ "SO_REUSEADDR",       SOL_SOCKET,	SO_REUSEADDR,   FLAG },
@@ -53,13 +53,13 @@ struct sock_opts {
 	{ "SO_REUSEPORT",       SOL_SOCKET,	SO_REUSEPORT,   FLAG },
 #else
 	{ "SO_REUSEPORT",       0,0,UNDEFINED },
-#endif
+#endif /*SO_REUSEPORT*/
 	{ "SO_TYPE",           SOL_SOCKET,  SO_TYPE,         INTEGER },
 #ifdef SO_USELOOPBACK
 	{ "SO_USELOOPBACK",    SOL_SOCKET,	SO_USELOOPBACK,	FLAG },
 #else
 	{ "SO_USELOOPBACK",    0,0,UNDEFINED },
-#endif
+#endif /*SO_USELOOPBACK*/
 
 	/* IPPROTO_IP options */
 	{ "IP_TOS",            IPPROTO_IP,	IP_TOS,         INTEGER },
@@ -72,18 +72,18 @@ struct sock_opts {
 	{ "IPV6_DONTFRAG",     IPPROTO_IPV6,IPV6_DONTFRAG,  FLAG },
 	#else
 	{ "IPV6_DONTFRAG",		0,0,UNDEFINED },
-	#endif
+	#endif /*IPV6_DONTFRAG*/
 	#ifdef	IPV6_UNICAST_HOPS
 	{ "IPV6_UNICAST_HOPS", IPPROTO_IPV6,IPV6_UNICAST_HOPS,INTEGER},
 	#else
 	{ "IPV6_UNICAST_HOPS",  0,0,UNDEFINED },
-	#endif
+	#endif /*IPV6_UNICAST_HOPS*/
 	#ifdef	IPV6_V6ONLY
 	{ "IPV6_V6ONLY",        IPPROTO_IPV6,IPV6_V6ONLY,   FLAG },
 	#else
 	{ "IPV6_V6ONLY",        0,0,UNDEFINED },
-	#endif
-#endif
+	#endif /*IPV6_V6ONLY*/
+#endif /*IPPROTO_IPV6*/
 
 	/* IPPROTO_TCP options */
 	{ "TCP_MAXSEG",         IPPROTO_TCP,TCP_MAXSEG,     INTEGER },
@@ -96,27 +96,31 @@ struct sock_opts {
 	{ "SCTP_AUTOCLOSE",     IPPROTO_SCTP,SCTP_AUTOCLOSE,INTEGER },
 	#else
 	{ "SCTP_AUTOCLOSE",     0,0,UNDEFINED },
-	#endif
+	#endif /*SCTP_AUTOCLOSE*/
 	#ifdef	SCTP_MAXBURST
 	{ "SCTP_MAXBURST",      IPPROTO_SCTP,SCTP_MAXBURST, INTEGER },
 	#else
 	{ "SCTP_MAXBURST",      0,0,UNDEFINED },
-	#endif
+	#endif /*SCTP_MAXBURST*/
 	#ifdef	SCTP_MAXSEG
 	{ "SCTP_MAXSEG",        IPPROTO_SCTP,SCTP_MAXSEG,   INTEGER },
 	#else
 	{ "SCTP_MAXSEG",        0,0,UNDEFINED },
-	#endif
+	#endif /*SCTP_MAXSEG*/
 	#ifdef	SCTP_NODELAY
 	{ "SCTP_NODELAY",       IPPROTO_SCTP,SCTP_NODELAY, FLAG },
 	#else
 	{ "SCTP_NODELAY",       0,0,UNDEFINED },
-	#endif
+	#endif /*IPPROTO_SCTP*/
 	{ NULL,                 0,0,UNDEFINED }
-#endif
+#endif /*IPPROTO_SCTP*/
 };
 
-
+/**
+ * @brief Get and print the option name, value or state.
+ * 
+ * @param ptr a pointer to a sock_opts structure.
+ */
 void get_option(struct sock_opts *ptr)	{
 	int sockfd;
 	socklen_t sin_size;
@@ -138,12 +142,12 @@ void get_option(struct sock_opts *ptr)	{
 			case IPPROTO_IPV6:
 				sockfd = socket(AF_INET6, SOCK_STREAM, 0);
 				break;
-		#endif
+		#endif /*IPPROTO_IPV6*/
 		#ifdef	IPPROTO_SCTP
 			case IPPROTO_SCTP:
 				sockfd = socket(AF_INET, SOCK_SEQPACKET, IPPROTO_SCTP);
 				break;
-		#endif
+		#endif /*IPPROTO_SCTP*/
 			default:
 				fprintf(stderr, "unknown %d level", ptr->opt_level);
 				return;

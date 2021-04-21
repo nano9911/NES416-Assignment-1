@@ -4,7 +4,7 @@
  * @brief NES416-Assignment#3, get all sockets options and
  * 			change SO_SNDLOWAT and SO_RCVLOWAT values.
  * 		This is the main file.
- * @date 2021-04-17
+ * @date 2021-04-21
  * 
  */
 
@@ -13,19 +13,18 @@
 #include <sys/ioctl.h>
 #include <sys/utsname.h>
 
-#ifdef __sun__
-#include <unistd.h>
+#ifdef __sun__		/*headers only for Solaris*/
 #include <stropts.h>
 #include <sys/file.h>
 #endif
 
-int socket_nonblock_option();
-int socket_nonblock_ioctl();
-int socket_nonblock_fcntl();
+static int socket_nonblock_option();
+static int socket_nonblock_ioctl();
+static int socket_nonblock_fcntl();
 
 int main(int argc, char **argv)
 {
-	int	sockfd, rv=0;
+	int	sockfd;
 	socklen_t size=16;
 	/* used to set SO_SNDLOWAT and SO_RCVLOWAT values */
 	int setsnd=32, setrcv=128;
@@ -47,10 +46,18 @@ int main(int argc, char **argv)
 	for (ptr = sock_opts; ptr->opt_str != NULL; ptr++)
 		{get_option(ptr);}
 
-#if (defined __linux__ || defined __FreeBSD__)
+	/*************************************************************/
+	/* both options aren't defined in Solaris, So the test       */
+	/* doesn't worth it.                                         */
+#if defined __sun__
+	printf("\nSolaris doesn't support SO_SNDLOWAT and SO_RCVLOWAT\n");
+
+#elif (defined __linux__ || defined __FreeBSD__)
 	/*************************************************************/
    	/* To create a non blocking AF_INET stream socket,           */
 	/* we have two options:                                      */
+	/* (Note: We are creating a Non-Blocking socket to make the  */
+	/* change of SO_SNDLOWAT and SO_RCVLOWAT reasonable and safe)*/
 	/*                                                           */
 	/* - with SOCK_STREAM | SOCK_NONBLOCK, in this case we won't */
 	/* use ioctl() or fcntl().                                   */
@@ -69,10 +76,12 @@ int main(int argc, char **argv)
 	/* code, I didn't really faced an issue while testing it,    */
 	/* but also I don't know what will go wrong.                 */
 	/*                                                           */
-	/* - uncomment one to use the other one                      */
+	/* - comment out two and uncomment one to use the other one  */
+   	/*************************************************************/
+	/* getting user input:                                       */
+	scanf("%d", &setsnd); scanf("%d", &setrcv);
    	/*************************************************************/
 
-   	/*************************************************************/
 	/* getting current SO_SNDLOWAT and SO_RCVLOWAT values to     */
 	/* compare after setsockopt()                                */
 	if (getsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT,
@@ -87,9 +96,16 @@ int main(int argc, char **argv)
 	                              past_snd_val ,past_rcv_val);
    	/*************************************************************/
 
+	/* setting SO_SNDLOWAT to user chosed value                  */
 	if (setsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT, &setsnd,
 	                                      sizeof(int)) == -1)
-		{perror("\nsetsockopt SOL_SOCKET, SO_SNDLOWAT");}
+	{
+		perror("\nsetsockopt SOL_SOCKET, SO_SNDLOWAT");
+#ifdef __linux__
+		printf("setsockopt() for SO_SNDLOWAT fails under linux\
+	even it's defined, but it's unchangable.\n");
+#endif
+	}
 	else	{
 		printf("\nsetsockopt SOL_SOCKET, SO_SNDLOWAT: Succeeded.");
 		if (getsockopt(sockfd, SOL_SOCKET, SO_SNDLOWAT,
@@ -98,9 +114,11 @@ int main(int argc, char **argv)
 
 		if (past_snd_val == cur_snd_val)
 			{printf("But, value didn't change.\n");}
-		printf("\nCurrent SO_SNDLOWAT value: %d\n", cur_snd_val);
+		printf("\nModified SO_SNDLOWAT value: %d\n", cur_snd_val);
 	}
+	/*************************************************************/
 
+	/* setting SO_RCVLOWAT to user chosed value                  */
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVLOWAT, &setrcv,
 	                                       sizeof(int)) == -1)
 		{perror("\nsetsockopt SOL_SOCKET, SO_RCVLOWAT");}
@@ -112,13 +130,13 @@ int main(int argc, char **argv)
 
 		if (past_rcv_val == cur_rcv_val)
 			{printf(" But, value didn't change.\n");}
-		printf("\nCurrent SO_RCVLOWAT value: %d\n", cur_rcv_val);
+		printf("\nModified SO_RCVLOWAT value: %d\n", cur_rcv_val);
 	}
+	/*************************************************************/
 
 	close(sockfd);
-#elif defined __sun__
-	printf("\nSolaris doesn't support SO_SNDLOWAT and SO_RCVLOWAT\n");
-#endif /*(defined __linux__ || defined __FreeBSD__)*/
+
+#endif /*defined __sun__ or (defined __linux__ || defined __FreeBSD__)*/
 
 	exit(0);
 }
@@ -127,12 +145,13 @@ int main(int argc, char **argv)
  * @brief a method to make a socket in nonblocking mode, by oring
  * SOCK_NONBLOCK with SOCK_STREAM in (type) argument of socket().
  * 
- * @return int 
+ * @return int : created socket descriptor
  */
 int socket_nonblock_option()	{
 	int sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (sockfd == -1)	{
 		perror("socket AF_INET, SOCK_STREAM | SOCK_NONBLOCK");
+		fprintf(stderr, "Aboting, due to critical error\n");
 		exit(0);
 	}
 
@@ -144,28 +163,32 @@ int socket_nonblock_option()	{
  * ioctl() with setting option FIONBIO to 1in case of linux or freebsd,
  * or option _IONBF in case of solaris.
  * 
- * @return int 
+ * @return int : created socket descriptor
  */
 int socket_nonblock_ioctl()	{
 	int sockfd, on=1;
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)	{
 		perror("socket AF_INET, SOCK_STREAM");
+		fprintf(stderr, "Aboting, due to critical error\n");
 		exit(0);
 	}
+
 #if (defined __linux__ || defined __FreeBSD__)
 	if (ioctl(sockfd, FIONBIO, (char *)&on) == -1)	{
 		perror("ioctl FIONBIO, 1");
-		printf("errno = %d\n", errno);
+		fprintf(stderr, "Aboting, due to critical error\n");
 	}
 	else	{printf("\n\nioctl FIONBIO, 1: succeeded\n");}
+
 #elif defined __sun__
 	if (ioctl(sockfd, _IONBF, (char *)&on) == -1)	{
 		perror("ioctl _IONBF, 1");
-		printf("errno = %d\n", errno);
+		fprintf(stderr, "Aboting, due to critical error\n");
 	}
 	else	{printf("\n\nioctl _IONBF, 1: succeeded\n");}
-#endif
+
+#endif /*(defined __linux__ || defined __FreeBSD__) or defined __sun__*/
 	return sockfd;
 }
 
@@ -174,39 +197,37 @@ int socket_nonblock_ioctl()	{
  * fcntl() with option O_NONBLOCK in case of linux or freebsd,
  * or option FNDELAY in case of solaris.
  * 
- * @return int 
+ * @return int : created socket descriptor
  */
 int socket_nonblock_fcntl()	{
 	int sockfd, flags;
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)	{
 		perror("socket AF_INET, SOCK_STREAM");
+		fprintf(stderr, "Aboting, due to critical error\n");
 		exit(0);
 	}
 
 	flags = fcntl(sockfd, F_GETFL, 0);
 	if (flags == -1)	{
 		perror("fcntl F_GETFL");
-		printf("errno = %d\n", errno);		
+		fprintf(stderr, "Aboting, due to critical error\n");
 	}
 
 #if (defined __linux__ || defined __FreeBSD__)
-	/* In case of Linux or FreeBSD use that if statement, and	 */
-	/* uncomment the next one.									 */
 	if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == -1)	{
 		perror("fcntl F_SETFL, O_NONBLOCK");
-		printf("errno = %d\n", errno);
+		fprintf(stderr, "Aboting, due to critical error\n");
 	}
 	else	{printf("\n\nfcntl F_SETFL, O_NONBLOCK: succeeded\n");}
 
 #elif defined __sun__
-	/* In case of Solaris uncomment this if statement, and		 */
-	/* comment out the past if statement						 */
 	if (fcntl(sockfd, F_SETFL, flags | FNDELAY) == -1)	{
 		perror("fcntl F_SETFL, FNDELAY");
-		printf("errno = %d\n", errno);
+		fprintf(stderr, "Aboting, due to critical error\n");
 	}
 	else 	{printf("\n\nfcntl F_SETFL, FNDELAY: succeeded\n");}
-#endif
+
+#endif /*(defined __linux__ || defined __FreeBSD__) or defined __sun__*/
 
 	return sockfd;
 }
