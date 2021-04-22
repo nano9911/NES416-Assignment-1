@@ -3,7 +3,6 @@
 
 **By:**
 - Adnan Omar [@nano9911](https://github.com/nano9911) (JUST ID:123423)
-- Roua Kofahi [@rouakofahi](https://github.com/rouakofahi) (JUST ID: 126474)
 
 This is the source code for our NES416 / Network Programming course Assignment #3.
 
