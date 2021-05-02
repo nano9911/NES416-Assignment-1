@@ -136,7 +136,7 @@ void get_option(struct sock_opts *ptr)	{
 			case SOL_SOCKET:
 			case IPPROTO_IP:
 			case IPPROTO_TCP:
-				sockfd = socket(AF_INET, SOCK_STREAM, 0);
+				sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 				break;
 		#ifdef	IPPROTO_IPV6
 			case IPPROTO_IPV6:

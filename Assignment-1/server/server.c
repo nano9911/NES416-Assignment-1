@@ -20,8 +20,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    int listenfd,               /* Server listening socket */
-        clientfd;               /* Client handler socket */
+    int tcplistenfd,               /* Server listening socket */
+        tcpclientfd;               /* Client handler socket */
 
     /*  hints -> We will fill it with out server specifications
     *   (ip version, transport protocol, some flags). */
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     socklen_t sin_size = sizeof(their_addr);
 
     /* Will contain the IP and Port in host byte order of client in their_addr */
-    char peer_name[NI_MAXHOST], peer_port[NI_MAXSERV];
+    char sender_addr[NI_MAXHOST], sender_svc[NI_MAXSERV];
 
     char recv_buf[RECV_BUF_LEN], send_buf[SEND_BUF_LEN];
 
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     hints.ai_flags = AI_PASSIVE; // use my IP
 
     /* argv[1] is the port number you want the server to bind and listen to. */
-    CreateSocket(NULL, argv[1], &hints, &listenfd);
+    CreateSocket(NULL, argv[1], &hints, &tcplistenfd);
 
     while(1)    {
         printf("\n\nwaiting for connections...\n\n");
@@ -60,39 +60,39 @@ int main(int argc, char *argv[])
         *   Also, it will fill their_addr with the IP address and port number of
         *   the peer of the connecion (client) in network byte order, and the
         *   length of it in sin_size. */
-        clientfd = accept(listenfd, (struct sockaddr *)&their_addr, &sin_size);
+        tcpclientfd = accept(tcplistenfd, (struct sockaddr *)&their_addr, &sin_size);
         
-        if (clientfd == -1)     {
+        if (tcpclientfd == -1)     {
             perror("accept");
             break;
         }
 
-        memset(peer_name,0,sizeof(peer_name));
-        memset(peer_port,0,sizeof(peer_port));
+        memset(sender_addr,0,sizeof(sender_addr));
+        memset(sender_svc,0,sizeof(sender_svc));
         /*  getnameinfo() will convert the IP:Port from network byte order to
         *   host byte order.
         *   The address will be saved as string in host byte order in peer_name
         *   and peer_port.*/
-        getnameinfo((struct sockaddr *)&their_addr, sin_size, peer_name, sizeof(peer_name),
-                    peer_port, sizeof(peer_port), NI_NUMERICHOST | NI_NUMERICSERV);
-        printf("server: got connection from %s:%s\n", peer_name, peer_port);
+        getnameinfo((struct sockaddr *)&their_addr, sin_size, sender_addr, sizeof(sender_addr),
+                    sender_svc, sizeof(sender_svc), NI_NUMERICHOST | NI_NUMERICSERV);
+        printf("server: got connection from %s:%s\n", sender_addr, sender_svc);
 
         while (1) {
             /* We zeroed (reseted) recv_buf, to clean it for the next data coming. */
             memset(recv_buf, 0, RECV_BUF_LEN);
-            printf("waiting for client: %s:%s messages...\n", peer_name, peer_port);
-            received = recv(clientfd, recv_buf, RECV_BUF_LEN, 0);
+            printf("waiting for client: %s:%s messages...\n", sender_addr, sender_svc);
+            received = recv(tcpclientfd, recv_buf, RECV_BUF_LEN, 0);
             if (received <= 0) {
                 perror("server: recv");
-                close(clientfd);
+                close(tcpclientfd);
                 break;
             }
 
-            printf("\nreceived \"%s\" from the client %s:%s\n", recv_buf, peer_name, peer_port);
+            printf("\nreceived \"%s\" from the client %s:%s\n", recv_buf, sender_addr, sender_svc);
 
             if (strcmp(recv_buf, "exit") == 0)   {
                 printf("exiting\n");
-                close(clientfd);
+                close(tcpclientfd);
                 break;
             }
 
@@ -104,19 +104,19 @@ int main(int argc, char *argv[])
             else if (rv == -2)   {sprintf(send_buf, "Division by zero.");}
             else if (rv == 0)    {sprintf(send_buf, "%d", result);}
 
-            rv = send(clientfd, send_buf, strlen(send_buf), 0);
+            rv = send(tcpclientfd, send_buf, strlen(send_buf), 0);
             printf("Sending \"%s\" to the client\n\n", send_buf);
             if (rv == -1)   {
                 perror("server: send");
-                close(clientfd);
+                close(tcpclientfd);
                 break;
             }
         }
 
-        printf("Closing connection with %s:%s\n", peer_name, peer_port);
-        close(clientfd);  /* We don't need this, so close it.. */
+        printf("Closing connection with %s:%s\n", sender_addr, sender_svc);
+        close(tcpclientfd);  /* We don't need this, so close it.. */
     }
 
-    close(listenfd);
+    close(tcplistenfd);
     exit(0);
 }

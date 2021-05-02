@@ -1,11 +1,13 @@
 /**
  * @file socket_handler.h
  * @author Adnan Omar (JUST ID: 123423)
- * @brief Header file of NES416/HW4
+ * @brief Socket Handler Header file for NES416/HW4
  * @date 2021-05-01
+ * @version 0.1
+ * 
+ * @copyright Copyright (c) 2021
  * 
  */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +32,7 @@
 *   Finally the integer listenfd which will be our listening socket descriptor
 *   when the function finishes, it will pass the created socket to it.
 */
-int get_socket(char ip[], char port[], struct addrinfo *hints) {
+static int get_socket(char ip[], char port[], struct addrinfo *hints) {
     /* sockfd will be used in the function and will passes to the listenfd 
         if succeeded. */
     int sockfd;
@@ -44,7 +46,7 @@ int get_socket(char ip[], char port[], struct addrinfo *hints) {
     rv = getaddrinfo(ip, port, hints, &res);
     if (rv != 0)    {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        exit(1);
+        return -1;
     }
 
     /*
@@ -62,7 +64,7 @@ int get_socket(char ip[], char port[], struct addrinfo *hints) {
         if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) == -1)   {
             perror("setsockopt SOL_SOCKET, SO_REUSEPOR");
             close(sockfd);
-            exit(1);
+            return -1;
         }
 
         if (bind(sockfd, ptr->ai_addr, ptr->ai_addrlen) == -1)   {
@@ -74,7 +76,7 @@ int get_socket(char ip[], char port[], struct addrinfo *hints) {
         if (listen(sockfd, BACKLOG) == -1)     {
             perror("server: listen");
             close(sockfd);
-            exit(1);
+            return -1;
         }
 
         break;
@@ -84,15 +86,21 @@ int get_socket(char ip[], char port[], struct addrinfo *hints) {
 
     if (ptr == NULL)    {
         fprintf(stderr, "server: failed to bind\n");
-        exit(1);
+        return -1;
     }
     /* No error checking here, because it won't reach that
         level unless it's created succesfully. */
     return sockfd;
 }
 
-
-int create_socket(char svc[], int transport) {
+/**
+ * @brief Create a socket object
+ * 
+ * @param svc a string presents the service name, determines what port to use.
+ * @param transport Transport Protocol (TCP=1, UDP=0).
+ * @return int represents new socket descriptor.
+ */
+static int create_socket(char svc[], int transport) {
     if (transport != 0 && transport != 1)   {
         fprintf(stderr, "create_socket: invalid choice. (tcp = 1, udp = 0)\n");
         return -1;
