@@ -57,24 +57,24 @@ static int get_socket(char ip[], char port[], struct addrinfo *hints) {
     */
     for(ptr = res; ptr != NULL; ptr = ptr->ai_next)     {
         if (socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol) == -1)     {
-            perror("server: socket");
+            perror("get_socket: socket");
             continue;
         }
 
         if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) == -1)   {
-            perror("setsockopt SOL_SOCKET, SO_REUSEPOR");
+            perror("get_socket: setsockopt SOL_SOCKET, SO_REUSEPOR");
             close(sockfd);
             return -1;
         }
 
         if (bind(sockfd, ptr->ai_addr, ptr->ai_addrlen) == -1)   {
             close(sockfd);
-            perror("server: bind");
+            perror("get_socket: bind");
             continue;
         }
 
         if (listen(sockfd, BACKLOG) == -1)     {
-            perror("server: listen");
+            perror("get_socket: listen");
             close(sockfd);
             return -1;
         }
@@ -85,7 +85,7 @@ static int get_socket(char ip[], char port[], struct addrinfo *hints) {
     freeaddrinfo(res); /* All done with this structure */
 
     if (ptr == NULL)    {
-        fprintf(stderr, "server: failed to bind\n");
+        fprintf(stderr, "get_socket: failed to bind\n");
         return -1;
     }
     /* No error checking here, because it won't reach that

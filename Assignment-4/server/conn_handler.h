@@ -141,6 +141,10 @@ int tcp_client_handler(int sockfd)
         if (rv == -1)   {sprintf(send_buf, "Invalid choice.");}
         if (rv == ENC || rv == DEC) {
             rv = cipher(msg, msglen, rv);
+            if (rv == -1)  {
+                fprintf(stderr, "tcp_client_handler: cipher");
+                break;
+            }
         }
 
         rv = send(sockfd, send_buf, strlen(send_buf), 0);

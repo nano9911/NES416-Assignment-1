@@ -75,20 +75,20 @@ int main(int argc, char *argv[])
 
         rv = select(maxfd, &rset, NULL, NULL, NULL);
         if (rv == -1)   {
-            perror("select rset");
+            perror("main: select rset");
             break;
         }
 
         if (FD_ISSET(tcplistenfd, &rset))   {
             if (tcp_conn(tcplistenfd) == -1)    {
-                perror("tcp_conn");
+                perror("main: tcp_conn");
                 break;
             }
         }
 
         if (FD_ISSET(udpsockfd, &rset)) {
             if (udp_conn(udpsockfd) == -1)  {
-                perror("udp_conn");
+                perror("main: udp_conn");
                 break;
             }
         }
