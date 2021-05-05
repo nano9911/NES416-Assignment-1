@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    int tcplistenfd,               /* Server listening socket */
+    int sockfd,               /* Server listening socket */
         tcpclientfd;               /* Client handler socket */
 
     /*  hints -> We will fill it with out server specifications
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     hints.ai_flags = AI_PASSIVE; // use my IP
 
     /* argv[1] is the port number you want the server to bind and listen to. */
-    CreateSocket(NULL, argv[1], &hints, &tcplistenfd);
+    CreateSocket(NULL, argv[1], &hints, &sockfd);
 
     while(1)    {
         printf("\n\nwaiting for connections...\n\n");
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
         *   Also, it will fill their_addr with the IP address and port number of
         *   the peer of the connecion (client) in network byte order, and the
         *   length of it in sin_size. */
-        tcpclientfd = accept(tcplistenfd, (struct sockaddr *)&their_addr, &sin_size);
+        tcpclientfd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
         
         if (tcpclientfd == -1)     {
             perror("accept");
@@ -117,6 +117,6 @@ int main(int argc, char *argv[])
         close(tcpclientfd);  /* We don't need this, so close it.. */
     }
 
-    close(tcplistenfd);
+    close(sockfd);
     exit(0);
 }

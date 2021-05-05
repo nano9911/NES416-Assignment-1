@@ -15,7 +15,7 @@
 #define RECV_BUF_LEN 512        // Receive buffer size in bytes
 #define SEND_BUF_LEN 512         // Send buffer size in bytes
 
-int tcplistenfd,               /* Server listening socket */
+int sockfd,               /* Server listening socket */
     tcpclientfd;               /* Client handler socket */
 
 int childcount = 0;
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     hints.ai_flags = AI_PASSIVE; // use my IP
 
     /* argv[1] is the port number you want the server to bind and listen to. */
-    CreateSocket(NULL, argv[1], &hints, &tcplistenfd);
+    CreateSocket(NULL, argv[1], &hints, &sockfd);
 
     /*  Specify a signal handler for SIGCHLD signal */
     sig = signal(SIGCHLD, signal_handler);
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
         *   Also, it will fill their_addr with the IP address and port number of
         *   the peer of the connecion (client) in network byte order, and the
         *   length of it in sin_size. */
-        tcpclientfd = accept(tcplistenfd, (struct sockaddr *)&their_addr, &sin_size);
+        tcpclientfd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
         
         if (tcpclientfd == -1)     {
             perror("accept");
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
         pid = fork();
         if (pid == 0)   {
             /*  child don't need that*/
-            close(tcplistenfd);
+            close(sockfd);
             rv = client_handler();
             close(tcpclientfd);
             exit(rv);
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
         printf("%d child process end with exit code %d\n", pid, rv);
     }
 
-    close(tcplistenfd);
+    close(sockfd);
     printf("Parent Server listen socket closed\nFinished\n");
     exit(0);
 }

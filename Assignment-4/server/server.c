@@ -16,7 +16,7 @@
 #include <signal.h>
 #include <wait.h>
 
-int tcplistenfd;               /* TCP Server listening socket */
+int sockfd;               /* TCP Server listening socket */
 
 void signal_handler(int sig_no)   {
     pid_t pid, rv;
@@ -51,8 +51,8 @@ int main(int argc, char *argv[])
     *   TCP=1 or UDP=0 on the second argument. */
 
     /*TCP socket*/
-    tcplistenfd = create_socket(argv[1], 1);
-    if (tcplistenfd == -1)
+    sockfd = create_socket(argv[1], 1);
+    if (sockfd == -1)
         {perror("create_socket 1(tcp)"); exit(1);}
     /*UDP socket*/
     udpsockfd = create_socket(argv[1], 1);
@@ -69,9 +69,9 @@ int main(int argc, char *argv[])
     FD_ZERO(&rset);
     while(1)    {
         printf("\nwaiting for connections...\n\n");
-        FD_SET(tcplistenfd, &rset);
+        FD_SET(sockfd, &rset);
         FD_SET(udpsockfd, &rset);
-        maxfd = max(tcplistenfd, udpsockfd) + 1;
+        maxfd = max(sockfd, udpsockfd) + 1;
 
         rv = select(maxfd, &rset, NULL, NULL, NULL);
         if (rv == -1)   {
@@ -79,8 +79,8 @@ int main(int argc, char *argv[])
             break;
         }
 
-        if (FD_ISSET(tcplistenfd, &rset))   {
-            if (tcp_conn(tcplistenfd) == -1)    {
+        if (FD_ISSET(sockfd, &rset))   {
+            if (tcp_conn(sockfd) == -1)    {
                 perror("main: tcp_conn");
                 break;
             }
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
         printf("%d child process end with exit code %d\n", pid, rv);
     }
 
-    close(tcplistenfd);
+    close(sockfd);
     close(udpsockfd);
     printf("Parent Server listen socket closed\nFinished\n");
     exit(0);

@@ -24,7 +24,7 @@ int main(int argc,char ** argv)
 {
     struct sockaddr_in sa, lo;
     int received, sent;         /*counters for bytes sent per each send() or recv()*/
-    int conntfd,sockfd;                  /*discriptors to reach the sockets*/
+    int sockfd;                  /*discriptors to reach the sockets*/
     char send_buf[SEND_BUF_LEN];                      /*buffer to write received data in*/
     char recv_buf[RECV_BUF_LEN];                      /*buffer to write sent data in*/
     char menu_buf[MENU_BUF_LEN];                      /*buffer to save menu from server in*/

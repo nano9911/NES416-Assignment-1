@@ -30,7 +30,7 @@ static int decode_msg(char *msg, size_t len, char *text, int *textlen)  {
 
     if (op == ENC || op == DEC) {
         *textlen = (int)msg[1];
-        if ((*textlen)+2 > len)
+        if ((*textlen)+1 > len)
             return -2;
 
         for (int i = 0; ptr < ((*textlen)+2); ptr++, i++)
@@ -71,7 +71,7 @@ static char char_move_around(char org, char k, int op)   {
  * @param op client user choice
  * @return int: -1 in case of fgets failed, 0 if succeeded
  */
-static int cipher(char *msg, int msglen, int op)    {
+static int cipher(char *msg, int msglen, char *out, int op)    {
     int rv;
     char key[7];
 
@@ -84,14 +84,14 @@ static int cipher(char *msg, int msglen, int op)    {
         }
         /* check if new key length */
         else if (strlen(key) != 7)  {
-            printf(stderr, "invlalid key: should be 7 small case \
+            fprintf(stderr, "invlalid key: should be 7 small case \
 characters.\n");
             continue;
         }
 
         for (int i = 0; i < 7; i++) {
             if (!(key[i] >= 'a' && key[i] <= 'z'))  {
-                printf(stderr, "invlalid key: should be 7 small \
+                fprintf(stderr, "invlalid key: should be 7 small \
 case characters.\n");
                 continue;
             }
@@ -99,7 +99,7 @@ case characters.\n");
     }
 
     for (int i = 0; i < msglen; i++)    {
-        msg[i] = char_move_around(msg[i], key[i%7], op);
+        out[i] = char_move_around(msg[i], key[i%7], op);
     }
 
     return 0;
