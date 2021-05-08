@@ -11,7 +11,8 @@ Client and Server with substitute cipher/cryptosystem service.
 The server should implement both:
 - TCP MultiProcessing.
 - UDP Concurrent.
-and listen on both of them (by multiplexing).
+
+And listen on both of them (by multiplexing).
 
 The client should also offer both options (TCP or UDP) for user to use when communicating with server. And offer this menu to user:
 - Encrypt a message.
