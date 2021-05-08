@@ -4,7 +4,7 @@
 **By:**
 - Adnan Omar [@nano9911](https://github.com/nano9911) (JUST ID:123423)
 
-This is the source code for NES416 / Network Programming course Assignment #3.
+This is the source code for NES416 / Network Programming course Assignment #4.
 
 ## Overview
 Client and Server with substitute cipher/cryptosystem service.
