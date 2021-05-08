@@ -10,26 +10,28 @@
  */
 
 
-#include "conn_handler.h"
-#include <sys/select.h>
-#include <sys/time.h>
-#include <signal.h>
-#include <wait.h>
+#include "server_conn_handler.h"
 
-int sockfd;               /* TCP Server listening socket */
+struct children {
+    pid_t pid;
+    struct children *next;
+};
 
 void signal_handler(int sig_no)   {
-    pid_t pid, rv;
-    pid = wait(&rv);
-    printf("%d child process end with exit code %d\n", pid, rv);
-    childcount--;
+    if (sig_no == SIGCHLD)  {
+        pid_t pid;
+        int rv;
+        pid = waitpid(-1, &rv, 0);
+        printf("%d child process end with exit code %d\n", pid, rv);
+        childcount--;
+    }
 }
 
 int main(int argc, char *argv[])
 {
     if (argc != 2)  {
-        printf("Usage: ./calc_server [port no.]\n");
-        exit(1);
+        printf("Usage: ./%s [port no.]\n", argv[0]);
+        exit(0);
     }
 
     if (atoi(argv[1]) < 1024 || atoi(argv[1]) > 45000)  {
@@ -38,57 +40,55 @@ int main(int argc, char *argv[])
     }
 
     sig_t sig;
-    int udpsockfd,          /* UDP Server listening socket  */
-        maxfd=0, rv, op=0;
-    pid_t pid = 0;          /* childs pid */
+    int rv=EXIT_SUCCESS, maxfd=0, chrv;
 
-    fd_set  rset,           /* read set descriptors */
-            wset;           /* write set descriptor */
+    fd_set  rset;           /* read set descriptors */
 
     /*  argv[1] is the port number you want the server to bind and
     *   listen to. */
     /*  create_socket() determines if the socket type if it's
-    *   TCP=1 or UDP=0 on the second argument. */
+    *   TCP=1 or UDP=0 on the sebest of cond argument. */
 
     /*TCP socket*/
-    sockfd = create_socket(argv[1], 1);
-    if (sockfd == -1)
-        {perror("create_socket 1(tcp)"); exit(1);}
+    tcpsockfd = create_socket(argv[1], 1);
+    if (tcpsockfd == -1)
+        {perror("create_socket 1(tcp)"); exit(EXIT_FAILURE);}
     /*UDP socket*/
-    udpsockfd = create_socket(argv[1], 1);
+    udpsockfd = create_socket(argv[1], 0);
     if (udpsockfd == -1)
-        {perror("create_socket 0(udp)"); exit(1);}
+        {perror("create_socket 0(udp)"); exit(EXIT_FAILURE);}
 
     /* Specify a signal handler for SIGCHLD signal */
     sig = signal(SIGCHLD, signal_handler);
     if (sig == SIG_ERR)    {
         perror("server: signal");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     FD_ZERO(&rset);
     while(1)    {
         printf("\nwaiting for connections...\n\n");
-        FD_SET(sockfd, &rset);
+        FD_SET(tcpsockfd, &rset);
         FD_SET(udpsockfd, &rset);
-        maxfd = max(sockfd, udpsockfd) + 1;
+        maxfd = MAX(tcpsockfd, udpsockfd) + 1;
 
-        rv = select(maxfd, &rset, NULL, NULL, NULL);
-        if (rv == -1)   {
+        if (select(maxfd, &rset, NULL, NULL, NULL) == -1)   {
             perror("main: select rset");
-            break;
+            continue;
         }
 
-        if (FD_ISSET(sockfd, &rset))   {
-            if (tcp_conn(sockfd) == -1)    {
+        if (FD_ISSET(tcpsockfd, &rset) > 0)   {
+            if (tcp_conn() == -1)    {
                 perror("main: tcp_conn");
+                rv = EXIT_FAILURE;
                 break;
             }
         }
 
-        if (FD_ISSET(udpsockfd, &rset)) {
-            if (udp_conn(udpsockfd) == -1)  {
+        if (FD_ISSET(udpsockfd, &rset) > 0) {
+            if (udp_conn() == -1)  {
                 perror("main: udp_conn");
+                rv = EXIT_FAILURE;
                 break;
             }
         }
@@ -96,13 +96,13 @@ int main(int argc, char *argv[])
 
     /*  if parent ended unexpectedly, we should wait for live children to end    */
     for (int i = 0; i < childcount; i++)    {
-        pid = wait(&rv);
-        printf("%d child process end with exit code %d\n", pid, rv);
+        int pid = waitpid(-1, &chrv, 0);
+        printf("%d child process end with exit code %d\n", pid, chrv);
+        childcount--;
     }
 
-    close(sockfd);
+    close(tcpsockfd);
     close(udpsockfd);
     printf("Parent Server listen socket closed\nFinished\n");
-    exit(0);
+    exit(rv);
 }
-
