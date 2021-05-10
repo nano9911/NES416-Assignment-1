@@ -12,20 +12,7 @@
 
 #include "server_conn_handler.h"
 
-struct children {
-    pid_t pid;
-    struct children *next;
-};
-
-void signal_handler(int sig_no)   {
-    if (sig_no == SIGCHLD)  {
-        pid_t pid;
-        int rv;
-        pid = waitpid(-1, &rv, 0);
-        printf("%d child process end with exit code %d\n", pid, rv);
-        childcount--;
-    }
-}
+void signal_handler(int sig_no);
 
 int main(int argc, char *argv[])
 {
@@ -39,8 +26,17 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    sig_t sig;
-    int rv=EXIT_SUCCESS, maxfd=0, chrv;
+    /* Specify a signal handler for SIGCHLD and SIGINT signal using sigaction struct and function */
+    struct sigaction sigIntHandler;
+
+    sigIntHandler.sa_handler = signal_handler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+
+    sigaction(SIGCHLD, &sigIntHandler, NULL);
+    sigaction(SIGINT, &sigIntHandler, NULL);
+
+    int rv=EXIT_SUCCESS, maxfd=0;
 
     fd_set  rset;           /* read set descriptors */
 
@@ -58,24 +54,17 @@ int main(int argc, char *argv[])
     if (udpsockfd == -1)
         {perror("create_socket 0(udp)"); exit(EXIT_FAILURE);}
 
-    /* Specify a signal handler for SIGCHLD signal */
-    sig = signal(SIGCHLD, signal_handler);
-    if (sig == SIG_ERR)    {
-        perror("server: signal");
-        exit(EXIT_FAILURE);
-    }
+    printf("\nwaiting for connections...\n\n");
 
     FD_ZERO(&rset);
     while(1)    {
-        printf("\nwaiting for connections...\n\n");
         FD_SET(tcpsockfd, &rset);
         FD_SET(udpsockfd, &rset);
         maxfd = MAX(tcpsockfd, udpsockfd) + 1;
 
-        if (select(maxfd, &rset, NULL, NULL, NULL) == -1)   {
-            perror("main: select rset");
+//        select(maxfd, &rset, NULL, NULL, NULL);
+        if (select(maxfd, &rset, NULL, NULL, NULL) == -1)
             continue;
-        }
 
         if (FD_ISSET(tcpsockfd, &rset) > 0)   {
             if (tcp_conn() == -1)    {
@@ -94,15 +83,32 @@ int main(int argc, char *argv[])
         }
     }
 
-    /*  if parent ended unexpectedly, we should wait for live children to end    */
-    for (int i = 0; i < childcount; i++)    {
-        int pid = waitpid(-1, &chrv, 0);
-        printf("%d child process end with exit code %d\n", pid, chrv);
+    wait_children_and_exit(rv);
+}
+
+void signal_handler(int sig_no)   {
+    if (sig_no == SIGCHLD)  {
+        pid_t pid;
+        int rv=0;
+
+        pid = waitpid(-1, &rv, 0);
+        printf("%d child process ended with exit code %d\n", pid, rv);
         childcount--;
+
+        if (rv == QUIT || rv == 25344) {
+            printf("TCP Client sent termination signal \"3--\"to child %d so \
+parent is going down too now.\n", pid);
+
+        wait_children_and_exit(EXIT_SUCCESS);
+        }
+        return;
     }
 
-    close(tcpsockfd);
-    close(udpsockfd);
-    printf("Parent Server listen socket closed\nFinished\n");
-    exit(rv);
+    if (sig_no == SIGINT)   {
+        printf("Exiting with out waiting childs: Interrupte signal: SIGINT(%d)\n", sig_no);
+        close(tcpclientfd);
+        close(tcpsockfd);
+        close(udpsockfd);
+        exit(EXIT_SUCCESS);
+    }
 }

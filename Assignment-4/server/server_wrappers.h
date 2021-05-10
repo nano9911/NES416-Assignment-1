@@ -27,7 +27,8 @@
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 
 #define RECV_BUF_LEN 512        // Receive buffer size in bytes
-#define SEND_BUF_LEN 512        // Send buffer size in bytes
+#define SEND_BUF_LEN 1024       // Send buffer size in bytes
+#define QUIT 99                 // signal from child when ended to end server
 
 char *choices[] = {
     "Error",
@@ -60,6 +61,22 @@ socklen_t sin_size = sizeof(their_addr);
 in their_addr */
 char sender_addr[NI_MAXHOST], sender_svc[NI_MAXSERV];
 
+void wait_children_and_exit(int rv)   {
+    int chrv=0;
+
+    /*  if parent ended unexpectedly, we should wait for live children to end    */
+    for (int i = 0; i < childcount; i++)    {
+        int pid = waitpid(-1, &chrv, 0);
+        printf("%d child process end with exit code %d\n", pid, chrv);
+        childcount--;
+    }
+
+    close(tcpsockfd);
+    close(udpsockfd);
+    printf("Parent Server Going down after closed all sockets\nFinished\n");
+    exit(rv);
+}
+
 int Recv(char *recv_buf, size_t buf_len, int flags,
         char *sender_addr, char *sender_svc) {
 
@@ -70,16 +87,33 @@ int Recv(char *recv_buf, size_t buf_len, int flags,
             printf("%s:%s closed the connection\n",
                             sender_addr, sender_svc);
 
-        else    {
+        else
             perror("tcp_client_handler: recv");
-            close(tcpclientfd);
-            close(udpsockfd);
-            exit(EXIT_FAILURE);
-        }
+
+        close(tcpclientfd);
+        exit(EXIT_FAILURE);
     }
 
-    printf("Received message from %s:%s:\t%s\n",
-            sender_addr, sender_svc, recv_buf);
+    else if (strlen(recv_buf) == 0) {
+        printf("TCP Socket: Empty Message received from %s:%s and ignored\n\n",
+            sender_addr, sender_svc);
+        return 0;
+    }
+    
+//    else if (recv_buf[0] == '3' && recv_buf[1] == '-' && recv_buf[2] == '-' && strlen(recv_buf) == 3) {
+    else if (strncmp(recv_buf, "3--", 3) == 0)   {
+        printf("TCP Socket: Closing program: Client %s:%s sent Termination signal \"3--\"\n",
+                sender_addr, sender_svc);
+
+        close(tcpclientfd);
+        exit(QUIT);
+    }
+
+    printf("/*****************************************************************/\n");
+    printf("TCP Socket: Message received from %s:%s: (length = %ld)\n%s\n",
+            sender_addr, sender_svc, strlen(recv_buf), recv_buf);
+    printf("/*****************************************************************/\n\n");
+
     return received;
 }
 
@@ -91,12 +125,13 @@ void Send(const char *send_buf, size_t buf_len, int flags,
         rv = EXIT_FAILURE;
         perror("tcp_client_handler: send");
         close(tcpclientfd);
-        close(udpsockfd);
         exit(EXIT_FAILURE);
     }
 
-    printf("Sent \"%s\" of length %ld to the client %s:%s\n\n",
-            send_buf, buf_len, sender_addr, sender_svc);
+    printf("/*****************************************************************/\n");
+    printf("TCP Socket: Message Sent to client %s:%s: (length = %ld)\n%s\n",
+            sender_addr, sender_svc, strlen(send_buf), send_buf);
+    printf("/*****************************************************************/\n\n");
 }
 
 int Recvfrom(char *__restrict__ recv_buf, size_t buf_len,
@@ -107,10 +142,20 @@ int Recvfrom(char *__restrict__ recv_buf, size_t buf_len,
             (struct sockaddr *)their_addr, sin_size);
     if (received == -1) {
         perror("udp_conn: recv");
-        close(tcpsockfd);
-        close(udpsockfd);
-        exit(EXIT_FAILURE);
+
+        wait_children_and_exit(EXIT_FAILURE);
     }
+
+    else if (strlen(recv_buf) == 0)
+        return 0;
+    
+    else if (strncmp(recv_buf, "3--", 3) == 0)   {
+        printf("UDP Socket: Closing server program: Client %s:%s user sent Termination signal\n",
+                sender_addr, sender_svc);
+        
+        wait_children_and_exit(EXIT_SUCCESS);
+    }
+
 
     return received;
 }
@@ -124,13 +169,13 @@ void Sendto(const char *send_buf, ssize_t buf_len, int flags,
 
     if (rv != buf_len+1)   {
         perror("udp_conn: send");
-        close(tcpsockfd);
-        close(udpsockfd);
-        exit(EXIT_FAILURE);
+        wait_children_and_exit(EXIT_FAILURE);
     }
 
-    printf("Sent \"%s\" to client %s:%s\n\n",
-            send_buf, sender_addr, sender_svc);
+    printf("/*****************************************************************/\n");
+    printf("UDP Socket: Message Sent to client %s:%s: (length = %ld)\n%s\n",
+            sender_addr, sender_svc, strlen(send_buf), send_buf);
+    printf("/*****************************************************************/\n\n");
 }
 
 int Accept(struct sockaddr_storage *their_addr,
@@ -145,9 +190,7 @@ int Accept(struct sockaddr_storage *their_addr,
 
     if (tcpclientfd == -1)     {
         perror("tcp_conn: accept");
-        close(tcpsockfd);
-        close(udpsockfd);
-        exit(EXIT_FAILURE);
+        wait_children_and_exit(EXIT_FAILURE);
     }
 
     return tcpclientfd;

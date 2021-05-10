@@ -15,13 +15,24 @@
 
 int tcp_client_handler();
 
-void handle_message(char *msg, int *len, char *output)    {
+int handle_message( char *msg, int *len, char *output)    {
+
     int rv = decode_msg(msg, len, output);
 
     if (rv == ERR)   {sprintf(output, "Invalid choice.");}
+
     else if (rv == ENC || rv == DEC) {
         cipher(output, *len, rv);
     }
+
+    else if (rv == LIST)    {
+        list_directory(output);
+    }
+
+    else if (rv == EXIT)
+        printf("Client choose Exit(3) and going to close\n");
+
+    return 0;
 }
 
 /*****************************************************************/
@@ -35,7 +46,7 @@ void handle_message(char *msg, int *len, char *output)    {
  */
 int udp_conn()    {
     char recv_buf[RECV_BUF_LEN], send_buf[SEND_BUF_LEN];
-    int received = 0;
+    int received = 0, rv=0;
 
     /*  We zeroed (reseted) buffers, to clean it for the next
      *  data coming. */
@@ -56,10 +67,21 @@ int udp_conn()    {
                 sender_addr, sizeof(sender_addr),
                 sender_svc, sizeof(sender_svc),
                 NI_NUMERICHOST | NI_NUMERICSERV);
-    printf("UDP Server: Got message from %s:%s :\t%s\n",
-                    sender_addr, sender_svc, recv_buf);
 
-    handle_message(recv_buf, &received, send_buf);
+    if (received == 0)  {
+        printf("UDP Socket: Empty Message received from %s:%s and ignored\n\n",
+            sender_addr, sender_svc);
+    }
+
+    printf("/*****************************************************************/\n");
+    printf("UDP Socket: Message received from %s:%s: (length = %ld)\n%s\n",
+            sender_addr, sender_svc, strlen(recv_buf), recv_buf);
+    printf("/*****************************************************************/\n\n");
+
+    rv = handle_message(recv_buf, &received, send_buf);
+    if (rv == 1)    {
+        return 0;
+    }
 
     Sendto(send_buf, strlen(send_buf), 0,
         &their_addr, sin_size, sender_addr, sender_svc);
@@ -115,7 +137,7 @@ int tcp_conn()  {
 int tcp_client_handler()
 {
     char recv_buf[RECV_BUF_LEN], send_buf[SEND_BUF_LEN];
-    int received = 0;
+    int received = 0, rv=EXIT_SUCCESS;
 
     /*  getnameinfo() will convert the IP:Port from network byte
     *   order to host byte order.
@@ -132,15 +154,21 @@ int tcp_client_handler()
         memset(recv_buf, 0, RECV_BUF_LEN);
         memset(send_buf, 0, SEND_BUF_LEN);
 
-        printf("waiting for client: %s:%s messages...\n",
+        printf("TCP server: waiting for client: %s:%s messages...\n",
                                 sender_addr, sender_svc);
         received = Recv(recv_buf, RECV_BUF_LEN, 0, sender_addr, sender_svc);
 
-        handle_message(recv_buf, &received, send_buf);
+        if (received == 0)
+            continue;
+
+        rv = handle_message(recv_buf, &received, send_buf);
+        if (rv != 0)
+            break;
 
         Send(send_buf, strlen(send_buf), 0, sender_addr, sender_svc);
+        rv = EXIT_SUCCESS;
     }
 
-    printf("Closing connection with %s:%s\n\n", sender_addr, sender_svc);
-    return 0;
+    printf("TCP server: Closing connection with %s:%s\n\n", sender_addr, sender_svc);
+    return rv;
 }

@@ -9,6 +9,8 @@
  * 
  */
 
+#include <dirent.h>
+
 /* Enumeration values to make the operation more understandable */
 enum operations {ERR=-1, DEC=1, ENC=2, EXIT=3, LIST=4};
 
@@ -29,11 +31,9 @@ int decode_msg(char *msg, int *len, char *text)  {
     if (op == ENC || op == DEC) {
         for (int i = 1; i < *len; i++)
         {text[i-1] = msg[i];}
+        *len = strlen(text);
     }
-    else if (op != LIST || op != EXIT) op = ERR;
-    *len = strlen(text);
-    printf("extracted text: %s -> %s\ttype = %s\tlength = %ld\n",
-            type[op], text, choices[op], strlen(text));
+    else if (op != LIST && op != EXIT) op = ERR;
     return op;
 }
 
@@ -112,4 +112,33 @@ void cipher(char *msg, int msglen, int op)    {
     for (int i = 0; i < msglen; i++)    {
         msg[i] = char_move_around(msg[i], key[i%7], op);
     }
+}
+
+/**
+ * @brief List current directory files
+ * 
+ * @param out buffer to fill data in
+ */
+void list_directory(char *out)   {
+    DIR *folder;
+    struct dirent *entry;
+    int files = 0;
+    char filename[265], chr='\n';
+
+    folder = opendir(".");
+    if(folder == NULL)  {
+        perror("Unable to read directory");
+        return;
+    }
+
+    while( (entry=readdir(folder)) )
+    {
+        files++;
+        memset(filename, 0, sizeof filename);
+//        sprintf(filename, "File %3d: %s\n", files, entry->d_name);
+        strncat(out, entry->d_name, strlen(entry->d_name));
+        strncat(out, &chr, 1);
+    }
+
+    closedir(folder);
 }

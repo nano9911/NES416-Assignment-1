@@ -20,7 +20,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#define RECV_BUF_LEN 512        // Receive buffer size in bytes
+#define RECV_BUF_LEN 1024        // Receive buffer size in bytes
 #define SEND_BUF_LEN 256        // Send buffer size in bytes
 
 int sockfd;
@@ -30,6 +30,12 @@ char *menu[] = {
     "2. Decrypt a message.",
     "3. Exit.",
     "4. Listing files in the current directory on the server."
+};
+
+char *type[]    = {
+    "",
+    "Encrypted text",
+    "Decrypted text",
 };
 
 int check_input_and_return_choice(int argc, char *argv[])
