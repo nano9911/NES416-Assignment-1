@@ -24,6 +24,7 @@
 #define SEND_BUF_LEN 256        // Send buffer size in bytes
 
 int sockfd;
+char peer_name[30], peer_port[10];
 
 char *menu[] = {
     "1. Encrypt a message,",

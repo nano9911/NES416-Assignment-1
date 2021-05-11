@@ -18,12 +18,12 @@
  *   garbage, then exit() and end the program, so no need to check it,
  *   it won't return any value.
  */
-static int get_socket(char ip[], char port[], struct addrinfo *hints) {
+int get_socket(char ip[], char port[], struct addrinfo *hints) {
     int sockfd;
     int rv;
     struct addrinfo *ptr, *res;
 
-    /* getadddrinfo() will take the configuration files specified previosly in hints
+    /*  getadddrinfo() will take the configuration files specified previosly in hints
      *  and the IP and port number to get the possible parameters (addresses) to use.
      *  The returned addresses are in a linked list which the first pointer of it will be
      *  in the last parameter passed to getaddrinfo() (res).
@@ -54,14 +54,25 @@ static int get_socket(char ip[], char port[], struct addrinfo *hints) {
         break;
     }
 
+    /*  getnameinfo() will convert the IP:Port from network byte
+     *   order to host byte order.
+     *   The address will be saved as string in host byte order in
+     *   peer_name (IP) and peer_port (Port #).
+     */
+    getnameinfo(ptr->ai_addr, ptr->ai_addrlen,
+                peer_name, sizeof(peer_name),
+                peer_port, sizeof(peer_port),
+                NI_NUMERICHOST | NI_NUMERICSERV);
+
     freeaddrinfo(res); /* All done with this structure */
 
     if (ptr == NULL)    {
         fprintf(stderr, "get_socket: failed to connect\n");
         return -1;
     }
-    /* No error checking here, because it won't reach that
-        level unless it's created succesfully. */
+
+//    sprintf(peer_name, "%s", inet_ntoa((*peer).sin_addr));
+
     return sockfd;
 }
 
@@ -72,7 +83,7 @@ static int get_socket(char ip[], char port[], struct addrinfo *hints) {
  * @param transport Transport Protocol (TCP=1, UDP=0).
  * @return int represents new socket descriptor.
  */
-static int create_socket(char addr[], char svc[], int transport) {
+int create_socket(char addr[], char svc[], int transport) {
     if (transport != 0 && transport != 1)   {
         fprintf(stderr, "create_socket: invalid choice. (tcp = 1, udp = 0)\n");
         return -1;

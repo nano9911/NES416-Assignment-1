@@ -26,7 +26,8 @@ void signal_handler(int sig_no)   {
 int main(int argc, char *argv[])    {
     int choice = check_input_and_return_choice(argc, argv);
 
-    /* Specify a signal handler for SIGINT signal using sigaction struct and function */
+    /* Specify a signal handler for SIGINT signal using
+    sigaction struct and function */
     struct sigaction sigIntHandler;
 
     sigIntHandler.sa_handler = signal_handler;
@@ -36,8 +37,8 @@ int main(int argc, char *argv[])    {
     sigaction(SIGINT, &sigIntHandler, NULL);
 
     int rv=0;
-    /* message length should be 2 bytes than send buffer for the encoding*/
-    char send_buf[SEND_BUF_LEN], recv_buf[RECV_BUF_LEN];
+    /* message length should be 2 bytes than send buffer for the encoding */
+    char  send_buf[SEND_BUF_LEN], recv_buf[RECV_BUF_LEN];
 
     /* create the socket based on user choice */
     sockfd = create_socket(argv[1], argv[2], choice);
@@ -49,7 +50,7 @@ int main(int argc, char *argv[])    {
         memset(recv_buf, 0, sizeof recv_buf);
 
         rv = create_message(send_buf);
-        
+
         Send(send_buf, strlen(send_buf)+1, 0);
 
         printf("/*****************************************************************/\n");
@@ -58,14 +59,15 @@ int main(int argc, char *argv[])    {
 
         if (rv == EXIT) {
             printf("Closing Client program\n");
-            sleep(2);
+            sleep(0.5);
             break;
         }
 
         Recv(recv_buf, RECV_BUF_LEN, choice);
 
         printf("/*****************************************************************/\n");
-        printf("Message received from %s:%s: (Length = %ld)\n%s\n", argv[1], argv[2], strlen(recv_buf), recv_buf);
+        printf("Message received from %s:%s: (Length = %ld)\n%s\n",
+                peer_name, peer_port, strlen(recv_buf), recv_buf);
         printf("/*****************************************************************/\n\n");
     }
 
@@ -133,6 +135,5 @@ int create_message(char *msg)    {
         sprintf(msg, "%d", rv);
     }
 
-//    printf("message: %s\tchoice: %d\tlength: %lx\n", output, rv, strlen(output));
     return rv;
 }
