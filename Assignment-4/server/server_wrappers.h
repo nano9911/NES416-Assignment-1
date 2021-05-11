@@ -195,13 +195,3 @@ int Accept(struct sockaddr_storage *their_addr,
 
     return tcpclientfd;
 }
-
-void Signal(int __sig, sig_t __handler) {
-    sig_t sig = signal(__sig, __handler);
-    if (sig == SIG_ERR)    {
-        perror("server: signal");
-        close(tcpsockfd);
-        close(udpsockfd);
-        exit(EXIT_FAILURE);
-    }
-}
