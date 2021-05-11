@@ -23,6 +23,14 @@ The client should also offer both options (TCP or UDP) for user to use when comm
 ## Notes
 I tried hardly to make the code well organised, so you find two folders (server and client):
 ### Server
+To run server you can use the Makefile by this command:
+>   make run-server
+
+Where the code will be compiled with full check for errors and warnings by:
+> 	gcc -Wall -Wextra -g server/server.c -o server/server
+Then will be executed by:
+>	server/./server nes416_port
+
 - server.c is the main file:
     1. main().
     2. signal_handler().
@@ -54,6 +62,21 @@ I tried hardly to make the code well organised, so you find two folders (server 
     7. Signal().
 
 ### Client
+To run client in TCP mode you can use the Makefile by this command:
+>   make run-client-tcp
+Where the code will be compiled with full check for errors and warnings by:
+>	gcc -Wall -Wextra -g client/client.c -o client/client
+Then will be executed by:
+>	client/./client nes416_crypto_server nes416_port tcp
+
+or by UDP mode:
+>   make run-client-udp
+Where the code will be compiled with full check for errors and warnings by:
+>	gcc -Wall -Wextra -g client/client.c -o client/client
+Then will be executed by:
+>	client/./client nes416_crypto_server nes416_port udp
+
+
 - client.c is the main file, which handles the send and receive loop, and encode user choice and message:
     1. signal_handler().
     2. main().
