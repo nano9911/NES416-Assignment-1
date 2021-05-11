@@ -25,7 +25,6 @@ I tried hardly to make the code well organised, so you find two folders (server 
 ### Server
 To run server you can use the Makefile by this command:
 >   make run-server
-
 Where the code will be compiled with full check for errors and warnings by:
 > 	gcc -Wall -Wextra -g server/server.c -o server/server
 Then will be executed by:
@@ -75,7 +74,6 @@ Where the code will be compiled with full check for errors and warnings by:
 >	gcc -Wall -Wextra -g client/client.c -o client/client
 Then will be executed by:
 >	client/./client nes416_crypto_server nes416_port udp
-
 
 - client.c is the main file, which handles the send and receive loop, and encode user choice and message:
     1. signal_handler().
