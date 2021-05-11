@@ -17,12 +17,7 @@ void signal_handler(int sig_no);
 int main(int argc, char *argv[])
 {
     if (argc != 2)  {
-        printf("Usage: ./%s [port no.]\n", argv[0]);
-        exit(0);
-    }
-
-    if (atoi(argv[1]) < 1024 || atoi(argv[1]) > 45000)  {
-        printf("port out of range\n");
+        printf("Usage: ./%s [service name]\n", argv[0]);
         exit(0);
     }
 
