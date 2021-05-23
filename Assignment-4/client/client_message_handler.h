@@ -43,6 +43,7 @@ char char_move_around(char org, char k, int op)   {
  * @return void 
  */
 void get_key(char *key)   {
+    int ok = 1;
     while (1)   {
         memset(key, 0, 7);
         /* get key user input */
@@ -59,11 +60,16 @@ characters.\n");
 
         /* check if all small case characters or not */
         for (int i = 0; i < 7; i++) {
-            if (key[i] < 'a' && key[i] > 'z')  {
+            if (key[i] < 'a' || key[i] > 'z')  {
                 fprintf(stderr, "invlalid key: should be 7 small \
 case characters.\n");
-                continue;
+                ok = 0;
+                break;
             }
+        }
+        if (ok != 1)    {
+            ok = 1;
+            continue;
         }
 
         break;

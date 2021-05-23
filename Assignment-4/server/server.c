@@ -59,7 +59,9 @@ int main(int argc, char *argv[])
 
 //        select(maxfd, &rset, NULL, NULL, NULL);
         if (select(maxfd, &rset, NULL, NULL, NULL) == -1)
-            continue;
+            if (errno == EINTR)
+                continue;
+            break;
 
         if (FD_ISSET(tcpsockfd, &rset) > 0)   {
             if (tcp_conn() == -1)    {
@@ -86,7 +88,7 @@ void signal_handler(int sig_no)   {
         pid_t pid;
         int rv=0;
 
-        pid = waitpid(-1, &rv, 0);
+        pid = waitpid(-1, &rv, WNOHANG);
         printf("%d child process ended with exit code %d\n", pid, rv);
         childcount--;
 
