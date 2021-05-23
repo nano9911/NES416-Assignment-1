@@ -66,7 +66,7 @@ void wait_children_and_exit(int rv)   {
 
     /*  if parent ended unexpectedly, we should wait for live children to end    */
     for (int i = 0; i < childcount; i++)    {
-        int pid = waitpid(-1, &chrv, 0);
+        int pid = waitpid(-1, &chrv, WNOHANG);
         printf("%d child process end with exit code %d\n", pid, chrv);
         childcount--;
     }

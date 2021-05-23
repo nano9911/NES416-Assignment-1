@@ -57,11 +57,14 @@ int main(int argc, char *argv[])
         FD_SET(udpsockfd, &rset);
         maxfd = MAX(tcpsockfd, udpsockfd) + 1;
 
-//        select(maxfd, &rset, NULL, NULL, NULL);
-        if (select(maxfd, &rset, NULL, NULL, NULL) == -1)
+        if (select(maxfd, &rset, NULL, NULL, NULL) == -1)   {
             if (errno == EINTR)
                 continue;
+            
+            perror("main: select:");
+            fprintf(stderr, "main: select -> Server Going down");
             break;
+        }
 
         if (FD_ISSET(tcpsockfd, &rset) > 0)   {
             if (tcp_conn() == -1)    {
