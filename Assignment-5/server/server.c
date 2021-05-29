@@ -9,22 +9,38 @@
  * 
  */
 
-#include"server_wrappers.h"
-#include "server_conn_handler.h"
+#include "server_sock_handler.h"
+#include"server_conn_handler.h"
 
-#define MAX_THREADS 5
-
-struct client_thread_arguments  {
-    struct sockaddr_storage their_addr;
-    socklen_t sin_size;
+struct threads   {
+    struct threads *before;
+    pthread_t tid;
+    struct threads *next;
+    int available;
 };
 
-struct msg_thread_arguments {
-    long num, from, to;
-};
+void add_thread(struct threads *first,
+                struct threads *last,
+                pthread_t newid)   {
 
-void *client_thread(void *argv);
-void *msg_thread(void *argv);
+    struct threads *temp;
+    if (first->available == 0 && last->available == 0)  {
+        first = (struct threads *)malloc(sizeof(struct threads));
+
+        first->tid = newid; first->available = 1;
+        last = first;
+    }
+
+    else if (first->available == 1 && last->available == 1) {
+        temp = (struct threads *)malloc(sizeof(struct threads));
+
+        last->next = temp;
+        temp->before = last;
+        last = temp;
+        last->tid = newid;
+        last->available = 1;
+    }
+}
 
 int main(int argc, char *argv[])    {
     if (argc < 2)   {
@@ -32,56 +48,30 @@ int main(int argc, char *argv[])    {
         exit(0);
     }
 
-    pthread_t *thid;
+    struct threads *first=NULL, *last=first;
+    pthread_t temp;
     int sockfd = get_tcp_socket(NULL, argv[1]),
         newsockfd;
 
     while(1) {
-        struct client_thread_arguments args;
-        args.sin_size = sizeof args.their_addr;
-        
-        newsockfd = accept(sockfd,(struct sockaddr *)&(args.their_addr), &(args.sin_size));
+        struct client_thread_arguments *args =
+        (struct client_thread_arguments *)malloc(sizeof(struct client_thread_arguments));
+        args->sin_size = sizeof args->their_addr;
+
+        newsockfd = accept( sockfd,
+                            (struct sockaddr *)&(args->their_addr),
+                            &(args->sin_size));
         if (newsockfd == -1)    {
             perror("main: accept");
             break;
         }
 
-        pthread_create(thid, NULL, client_thread, &args);
+        if (pthread_create(&temp, NULL, client_thread, (void *)args) != 0)  {
+            perror("main: pthread_create");
+            break;
+        }
+        add_thread(first, last, temp);
     }
 
     exit(0);
-}
-
-/**
- * @brief client handler thread, starts after connection accepted
- * 
- * @param argv 
- * @return void* 
- */
-void *client_thread(void *argv)   {
-    struct client_thread_arguments *args = (struct client_thread_arguments *)argv;
-    char sender_addr[15], sender_svc[5];
-
-    /*  getnameinfo() will convert the IP:Port from network byte
-    *   order to host byte order.
-    *   The address will be saved as string in host byte order in
-    *   peer_name and peer_port.
-    */
-    getnameinfo((struct sockaddr *)&(args->their_addr), (args->sin_size),
-                sender_addr, sizeof(sender_addr),
-                sender_svc, sizeof(sender_svc),
-                NI_NUMERICHOST | NI_NUMERICSERV);
-
-    pthread_t threadid = pthread_self();
-
-
-
-    pthread_exit(0);
-}
-
-void *msg_thread(void *argv)    {
-    struct msg_thread_arguments *args = (struct msg_thread_arguments *)argv;
-    int rv = 0;
-
-    pthread_exit(rv);
 }

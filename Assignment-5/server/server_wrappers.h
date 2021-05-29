@@ -14,17 +14,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
 #include <string.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <time.h>
 #include <pthread.h>
+#include <math.h>
 
-int Recv(int tcpclientfd, char *recv_buf, size_t buf_len, int flags,
-        char *sender_addr, char *sender_svc) {
+#define MAX_THREAD 3
+
+struct client_thread_arguments  {
+    int                     sockfd;
+    struct sockaddr_storage their_addr;
+    socklen_t               sin_size;
+};
+
+struct msg_thread_arguments {
+    long num, from, to;
+};
+
+int Recv(int tcpclientfd,
+        char *recv_buf, size_t buf_len,
+        int flags,
+        const char *sender_addr, const char *sender_svc) {
 
     int received = recv(tcpclientfd, recv_buf, buf_len, flags);
 
@@ -32,24 +48,38 @@ int Recv(int tcpclientfd, char *recv_buf, size_t buf_len, int flags,
         if (received == 0)
             printf("%s:%s closed the connection\n",
                             sender_addr, sender_svc);
-
         else
             perror("tcp_client_handler: recv");
-
-        close(tcpclientfd);
-        exit(EXIT_FAILURE);
+        return -1;
     }
 
     else if (strlen(recv_buf) == 0) {
-        printf("TCP Socket: Empty Message received from %s:%s and ignored\n\n",
+        printf("TCP Socket: Empty Message received from %s:%s, \
+closing connection\n\n",
             sender_addr, sender_svc);
         return 0;
     }
 
-    printf("/*****************************************************************/\n");
-    printf("TCP Socket: Message received from %s:%s: (length = %ld)\n%s\n",
+    printf("TCP Socket: Message received from %s:%s: \
+(length = %ld)\n%s\n\n",
             sender_addr, sender_svc, strlen(recv_buf), recv_buf);
-    printf("/*****************************************************************/\n\n");
 
     return received;
+}
+
+int Send(int tcpclientfd,
+        const char *send_buf, size_t buf_len,
+        int flags,
+        char *sender_addr, char *sender_svc)   {
+
+    int rv = send(tcpclientfd, send_buf, buf_len, flags);
+    if (rv == -1)   {
+        perror("tcp_client_handler: send");
+        return -1;
+    }
+
+    printf("TCP Socket: Message Sent to client %s:%s: \
+(length = %ld)\n%s\n\n",
+            sender_addr, sender_svc, strlen(send_buf), send_buf);
+    return 0;
 }
