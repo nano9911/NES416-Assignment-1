@@ -9,38 +9,14 @@
  * 
  */
 
+#include "server_wrappers.h"
 #include "server_sock_handler.h"
-#include"server_conn_handler.h"
-
-struct threads   {
-    struct threads *before;
-    pthread_t tid;
-    struct threads *next;
-    int available;
-};
+#include "server_threads.h"
+#include "server_conn_handler.h"
 
 void add_thread(struct threads *first,
                 struct threads *last,
-                pthread_t newid)   {
-
-    struct threads *temp;
-    if (first->available == 0 && last->available == 0)  {
-        first = (struct threads *)malloc(sizeof(struct threads));
-
-        first->tid = newid; first->available = 1;
-        last = first;
-    }
-
-    else if (first->available == 1 && last->available == 1) {
-        temp = (struct threads *)malloc(sizeof(struct threads));
-
-        last->next = temp;
-        temp->before = last;
-        last = temp;
-        last->tid = newid;
-        last->available = 1;
-    }
-}
+                pthread_t newid);
 
 int main(int argc, char *argv[])    {
     if (argc < 2)   {
@@ -74,4 +50,27 @@ int main(int argc, char *argv[])    {
     }
 
     exit(0);
+}
+
+void add_thread(struct threads *first,
+                struct threads *last,
+                pthread_t newid)   {
+
+    struct threads *temp;
+    if (first->available == 0 && last->available == 0)  {
+        first = (struct threads *)malloc(sizeof(struct threads));
+
+        first->tid = newid; first->available = 1;
+        last = first;
+    }
+
+    else if (first->available == 1 && last->available == 1) {
+        temp = (struct threads *)malloc(sizeof(struct threads));
+
+        last->next = temp;
+        temp->before = last;
+        last = temp;
+        last->tid = newid;
+        last->available = 1;
+    }
 }

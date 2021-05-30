@@ -9,7 +9,7 @@
  * 
  */
 
-#pragma once
+//#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +25,7 @@
 #include <pthread.h>
 #include <math.h>
 
-#define MAX_THREAD 3
+#define WRAPPER_INCLUDED
 
 struct client_thread_arguments  {
     int                     sockfd;
@@ -36,6 +36,14 @@ struct client_thread_arguments  {
 struct msg_thread_arguments {
     long num, from, to;
 };
+
+struct threads   {
+    struct threads *before;
+    pthread_t tid;
+    struct threads *next;
+    int available;
+};
+
 
 int Recv(int tcpclientfd,
         char *recv_buf, size_t buf_len,
@@ -67,6 +75,7 @@ closing connection\n\n",
     return received;
 }
 
+
 int Send(int tcpclientfd,
         const char *send_buf, size_t buf_len,
         int flags,
@@ -81,5 +90,6 @@ int Send(int tcpclientfd,
     printf("TCP Socket: Message Sent to client %s:%s: \
 (length = %ld)\n%s\n\n",
             sender_addr, sender_svc, strlen(send_buf), send_buf);
+
     return 0;
 }
