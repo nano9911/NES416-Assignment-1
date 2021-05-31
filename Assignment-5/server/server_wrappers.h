@@ -9,41 +9,62 @@
  * 
  */
 
-//#pragma once
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <netdb.h>
-#include <arpa/inet.h>
 #include <time.h>
+#include <signal.h>
 #include <pthread.h>
 #include <math.h>
 
 #define WRAPPER_INCLUDED
+#define MAX_THREAD 3
 
-struct client_thread_arguments  {
+struct client_handler_thread_arguments  {
     int                     sockfd;
     struct sockaddr_storage their_addr;
     socklen_t               sin_size;
+    char                    *sender_addr[NI_MAXHOST],
+                            *sender_svc[NI_MAXSERV];
+    struct threads          *parent;
 };
 
-struct msg_thread_arguments {
-    long num, from, to;
+struct msg_handler_thread_arguments {
+    long num, from, to, *rv;
 };
 
 struct threads   {
-    struct threads *before;
-    pthread_t tid;
-    struct threads *next;
-    int available;
+    struct threads                  *before;
+    pthread_t                       tid;        /*thread id*/
+    struct threads                  *next;
 };
 
+unsigned int running_threads = 0;
+struct threads *first, *last;
+int listenfd;
+
+void signal_handler(int sig_no) {
+    if (sig_no == SIGINT)   {
+        printf("Exiting with out waiting threads -> ");
+        printf("Interrupte signal arrived: SIGINT(%d)\n", sig_no);
+
+        close(listenfd);
+
+        /*stop all running threads which will start there cleanup processures*/
+        for (struct threads *ptr = first; ptr != NULL; ptr = ptr->next) {
+            pthread_cancel(ptr->tid);
+            printf("Thread %ld terminated\n", ptr->tid);
+        }
+        exit(EXIT_SUCCESS);
+    }
+}
 
 int Recv(int tcpclientfd,
         char *recv_buf, size_t buf_len,
@@ -59,13 +80,6 @@ int Recv(int tcpclientfd,
         else
             perror("tcp_client_handler: recv");
         return -1;
-    }
-
-    else if (strlen(recv_buf) == 0) {
-        printf("TCP Socket: Empty Message received from %s:%s, \
-closing connection\n\n",
-            sender_addr, sender_svc);
-        return 0;
     }
 
     printf("TCP Socket: Message received from %s:%s: \
