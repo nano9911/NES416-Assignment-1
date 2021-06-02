@@ -70,7 +70,7 @@ void *client_thread(void *argv)  {
                 svc_number, sizeof(svc_number),
                 NI_NUMERICHOST | NI_NUMERICSERV);
 
-    printf("(Thread %d) Connected to server %s:%s\n",
+    printf("(Thread %d) Connected to server %s:%s\n\n",
                     args->id, server_addr, svc_number);
 
     sprintf(send_buf, "%ld", args->num);
@@ -80,7 +80,7 @@ void *client_thread(void *argv)  {
     if (Recv(sockfd, recv_buf, sizeof recv_buf, 0) == -1)
         pthread_exit(NULL);
 
-    printf("(Thread %d) Received response from server %s:%s:\n%s\n",
+    printf("(Thread %d) Received response from server %s:%s:\n%s\n\n",
                     args->id, server_addr, svc_number, recv_buf);
 
     pthread_cleanup_pop(1);
