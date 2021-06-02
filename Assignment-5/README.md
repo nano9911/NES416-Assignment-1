@@ -22,9 +22,9 @@ To run the server just use:
 For the client part it will use nes416_prime_server hostname as a traget and argument for client binary, so to make sure everything works fine run:
 > make add-host
 
-which should run the check_host_name.sh script which will check if the required hostname is present in the /etc/hosts file with the appropriate ip user inputed, and if not it will be added properly
+which should run the ***check_host_name.sh*** script which will check if the required hostname is present in the /etc/hosts file with the appropriate ip user inputed, and if not it will be added properly
 
-then to run the client tou could use:
+then to run the client you could use:
 > make run-client
 
 for compiling then running
