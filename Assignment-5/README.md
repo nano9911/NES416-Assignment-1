@@ -15,6 +15,18 @@ result (prime or not) and the time it took it to decide. The client will take us
 a different thread, one request contains user's input, the other contains user input incremented
 by 1.
 
+## Compiling and Running
+To run the server just use:
+> make run-server
+
+For the client part it will use nes416_prime_server hostname as a traget and argument for client binary, so to make sure everything works fine run:
+> make add-host
+which should run the check_host_name.sh script which will check if the required hostname is present in the /etc/hosts file with the appropriate ip user inputed, and if not it will be added properly
+
+then to run the client tou could use:
+> make run-client
+for compiling then running
+
 ## Notes
 I tried hardly to make the code well organised and weel documented,
 so you find two folders (server and client):
