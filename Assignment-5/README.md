@@ -32,14 +32,25 @@ Quoting from Dr.Raed Document:
 > associated threads with the client request terminates, but the server continue running waiting for more requests.
 
 The "server" directory contains 5 Files:
-- **server.c**: main file, contains only main() and add_thread()
-- **server_threads.h**: header file for new connections handler thread function client_handler_thread()and the cleanup function client_handler_thread_cleanup()
-- **server_msg_handler.h**: header file contains the test_primality() function which means as it's name, using msg_handler_thread() as the thread to use MAX_THREAD times with the appropriate range
-- **server_sock_handler.h**: header file for socket creation handling using the get_tcp_socket() function only
-- **server_wrappers.h**: includes all the required libraries and the Send() and Recv()  function which are just wrappers for send() and recv(), and signal_handler() to handle the Ctrl+c signal, also it contains the defnition of 3 important structs:
-  - *client_handler_thread_arguments*: to pass the required arguments from the main() to the client_handler_thread() function thread
-  - *msg_handler_thread_arguments*: to pass the required arguments from test_primality() to msg_handler_thread()
-  - *threads*: to organise a doubly linked list of running threads, which is added by add_thread(), and deleted at client_handler_thread_cleanup() for each terminated thread
+- **server.c**:
+  - main()
+  - add_thread()
+- **server_threads.h**:
+  - client_handler_thread()
+  - client_handler_thread_cleanup()
+- **server_msg_handler.h**:
+  - test_primality()
+  - msg_handler_thread()
+- **server_sock_handler.h**:
+  - get_tcp_socket()
+- **server_wrappers.h**:
+ - Send()
+ - Recv()
+ - signal_handler()
+ - Contains the defnition of 3 important structs:
+   - *client_handler_thread_arguments*: to pass the required arguments from the main() to the client_handler_thread() function thread
+   - *msg_handler_thread_arguments*: to pass the required arguments from test_primality() to msg_handler_thread()
+   - *threads*: to organise a doubly linked list of running threads, which is added by add_thread(), and deleted at client_handler_thread_cleanup() for each terminated thread
 
 ### Client
 Quoting from Dr.Raed Document:
@@ -51,12 +62,20 @@ Quoting from Dr.Raed Document:
 > before displaying the results and exits.
 
 The "client" directory contains 4 Files:
-- **client.c**: main file, contains only the main() function
-- **client_threads.h**: header file contains the thread function for both of the required threads client_thread() and the cleanup routine thread_cleanup()
-- **client_sock_handler.h**: header file for socket creation handling using the get_socket() function only
-- **client_wrappers.h**: includes all the required libraries and the Send() and Recv()  functions which are just wrappers for send() and recv(), and signal_handler() to handle the Ctrl+c signal, also it contains the defnition of 2 important structs:
-  - *thread_arguments*: to pass the required arguments from the main() to the client_thread() function thread
-  - *thread_cleanup_arguments*: to pass the required arguments from client_thread() thread to the cleanup routine thread_cleanup()
+- **client.c**:
+  - main()
+- **client_threads.h**:
+  - client_thread()
+  - thread_cleanup()
+- **client_sock_handler.h**:
+  - get_socket()
+- **client_wrappers.h**:
+  - Send()
+  - Recv()
+  - signal_handler()
+  - Contains the defnition of 2 important structs:
+    - *thread_arguments*: to pass the required arguments from the main() to the client_thread() function thread
+    - *thread_cleanup_arguments*: to pass the required arguments from client_thread() thread to the cleanup routine thread_cleanup()
 
 ### Primality and other options
 Quoting from Dr.Raed Document:
