@@ -44,13 +44,13 @@ The "server" directory contains 5 Files:
 - **server_sock_handler.h**:
   - get_tcp_socket()
 - **server_wrappers.h**:
- - Send()
- - Recv()
- - signal_handler()
- - Contains the defnition of 3 important structs:
-   - *client_handler_thread_arguments*: to pass the required arguments from the main() to the client_handler_thread() function thread
-   - *msg_handler_thread_arguments*: to pass the required arguments from test_primality() to msg_handler_thread()
-   - *threads*: to organise a doubly linked list of running threads, which is added by add_thread(), and deleted at client_handler_thread_cleanup() for each terminated thread
+  - Send()
+  - Recv()
+  - signal_handler()
+  - Contains the defnition of 3 important structs:
+    - *client_handler_thread_arguments*: to pass the required arguments from the main() to the client_handler_thread() function thread
+    - *msg_handler_thread_arguments*: to pass the required arguments from test_primality() to msg_handler_thread()
+    - *threads*: to organise a doubly linked list of running threads, which is added by add_thread(), and deleted at client_handler_thread_cleanup() for each terminated thread
 
 ### Client
 Quoting from Dr.Raed Document:
