@@ -2,7 +2,6 @@ CC=gcc -Wall -Wextra -pthread
 OPTIONS=-Wall -Wextra -pthread
 PORT=5987
 HOST=nes416_prime_server
-IP=
 
 run-server:
 	${CC} ${OPTIONS} server/server.c -o server/server -lm
