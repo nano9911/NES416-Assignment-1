@@ -25,6 +25,11 @@ int main(int argc, char *argv[])    {
         exit(0);
     }
 
+    if (atoi(argv[1]) < 0 || atoi(argv[1]) > 65535) {
+        fprintf(stderr, "Invalid port [service] number\n\n");
+        exit(0);
+    }
+
     struct threads  *temp=NULL;
     /**
      * @brief args is a pointer to arguments passed to the newly

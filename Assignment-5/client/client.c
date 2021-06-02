@@ -18,6 +18,11 @@ int main(int argc, char *argv[]) {
         printf("Usage: %s [server address] [service name or number]", argv[0]);
     }
 
+    if (atoi(argv[2]) < 0 || atoi(argv[2]) > 65535) {
+        fprintf(stderr, "Invalid port [service] number\n\n");
+        exit(0);
+    }
+
     struct thread_arguments args1 = {argv[1], argv[2], 0, 1},
                             args2 = {argv[1], argv[2], 0, 2};
 
