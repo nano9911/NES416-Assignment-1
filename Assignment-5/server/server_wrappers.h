@@ -20,6 +20,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <time.h>
+#include <sys/time.h>
 #include <signal.h>
 #include <pthread.h>
 #include <math.h>
@@ -31,13 +32,13 @@ struct client_handler_thread_arguments  {
     int                     sockfd;
     struct sockaddr_storage their_addr;
     socklen_t               sin_size;
-    char                    *sender_addr[NI_MAXHOST],
-                            *sender_svc[NI_MAXSERV];
+    char                    sender_addr[NI_MAXHOST],
+                            sender_svc[NI_MAXSERV];
     struct threads          *parent;
 };
 
 struct msg_handler_thread_arguments {
-    long num, from, to, *rv;
+    long num, from, to;
 };
 
 struct threads   {
@@ -78,7 +79,7 @@ int Recv(int tcpclientfd,
             printf("%s:%s closed the connection\n",
                             sender_addr, sender_svc);
         else
-            perror("tcp_client_handler: recv");
+            perror("Recv");
         return -1;
     }
 
@@ -97,7 +98,7 @@ int Send(int tcpclientfd,
 
     int rv = send(tcpclientfd, send_buf, buf_len, flags);
     if (rv == -1)   {
-        perror("tcp_client_handler: send");
+        perror("Send");
         return -1;
     }
 

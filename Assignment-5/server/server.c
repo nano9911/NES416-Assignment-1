@@ -31,8 +31,6 @@ int main(int argc, char *argv[])    {
      * created thread  */
     struct client_handler_thread_arguments *args;
     pthread_attr_t  attr;
-    int             listenfd=get_tcp_socket(NULL, argv[1]),
-                    newsockfd;
     char            sender_addr[NI_MAXHOST],
                     sender_svc[NI_MAXSERV];
 
@@ -40,13 +38,22 @@ int main(int argc, char *argv[])    {
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
+    listenfd=get_tcp_socket(NULL, argv[1]);
+
     while(1) {
-        printf("Waiting for connection...\n\n");
-        newsockfd = accept( listenfd,
+        printf("Waiting for connections...\n\n");
+
+        args = (struct client_handler_thread_arguments *)
+                malloc(sizeof(struct client_handler_thread_arguments));
+        args->sin_size = sizeof args->their_addr;
+        memset(&(args->their_addr), 0, sizeof args->their_addr);
+
+        args->sockfd = accept( listenfd,
                             (struct sockaddr *)&(args->their_addr),
                             &(args->sin_size));
-        if (newsockfd == -1)    {
+        if (args->sockfd == -1)    {
             perror("main: accept");
+            free(args);
             break;
         }
 
@@ -63,15 +70,14 @@ int main(int argc, char *argv[])    {
          * and initialize it's objects */
         temp = (struct threads *)
                 malloc(sizeof(struct threads));
-        args = (struct client_handler_thread_arguments *)
-                malloc(sizeof(struct client_handler_thread_arguments));
 
-        args->sin_size = sizeof args->their_addr;
         args->parent = temp;
 
         if (pthread_create(&(temp->tid), &attr,
                             client_handler_thread, (void *)args) != 0)  {
             perror("main: pthread_create");
+            free(args);
+            free(temp);
             break;
         }
 

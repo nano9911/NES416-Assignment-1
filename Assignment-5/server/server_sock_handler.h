@@ -16,7 +16,7 @@
 #endif /*ifndef WRAPPER_INCLUDED*/
 
 #define BACKLOG 10              // Pending connections queue capacity
-#define SOCK_HANDLER
+#define SERVER_SOCK_HANDLER_INCLUDED
 
 /**
  * @brief Get the tcp socket discreptor, get_tcp_socket() is our function to make it

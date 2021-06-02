@@ -17,13 +17,6 @@
 
 #define MSG_HANDLER_DEFINED
 
-void msg_handler_thread_cleanup(void *argv)  {
-    struct msg_handler_thread_arguments *args = 
-        (struct msg_handler_thread_arguments *)argv;
-    free(args);
-//    return NULL;
-}
-
 /**
  * @brief message handler thread, which will check the primality of a given
  * number to a range of number
@@ -35,19 +28,17 @@ void *msg_handler_thread(void *argv)    {
     struct msg_handler_thread_arguments *args = 
         (struct msg_handler_thread_arguments *)argv;
 
-    pthread_cleanup_push(msg_handler_thread_cleanup, args);
+    long *rv = (long *)malloc(sizeof(long));
+    *rv = -1;
 
     for (long i = args->from; i <= args->to; i++)    {
-        if (args->num % i == 0) {
-            *(args->rv) = i;
+        if ((args->num % i) == 0) {
+            *rv = i;
             break;
         }
     }
 
-    pthread_exit(NULL);
-    pthread_cleanup_pop(1);
-
-    return NULL;
+    return rv;
 }
 
 /**
@@ -58,35 +49,31 @@ void *msg_handler_thread(void *argv)    {
  * @param t 
  * @return int 
  */
-int test_primality(long num, time_t *t,
-                    pthread_t   *msgid)    {
+int test_primality(long num, pthread_t   *msgid)    {
+    long            from=2,
+                    block=((long)sqrt((double)num)) / MAX_THREAD,
+                    to=block,
+                    thread_rv[MAX_THREAD];
 
-    time_t      sec = time(NULL);
-    long        from=0,
-                to=(long)sqrt(num) / MAX_THREAD,
-                thread_rv[MAX_THREAD];
-    int         rv=1;
+    long            rv=-1;
+    void            *rt;
 
     /**
      * @brief msgargs is the pointer to arguments passed to the newly 
      * created thread  */
-    struct msg_handler_thread_arguments *msgargs;
+    struct msg_handler_thread_arguments msgargs[MAX_THREAD];
 
     /**  
      * @brief create multiple threads of count MAX_THREAD, each will
      * check the range given to it if the remainder of num
-     * and the numbers in the range is ZERO */
-    for (int i = 1; i <= MAX_THREAD; i++)   {
-        msgargs = (struct msg_handler_thread_arguments *)
-                    malloc(sizeof(struct msg_handler_thread_arguments));
-
-        msgargs->num = num;
-        msgargs->from = from;
-        msgargs->to = to;
-        msgargs->rv = &(thread_rv[i]);
+     * and one of the numbers in the range is ZERO */
+    for (int i = 0; i < MAX_THREAD; i++)   {
+        msgargs[i].num = num;
+        msgargs[i].from = from;
+        msgargs[i].to = to;
 
         if (pthread_create(&(msgid[i]), NULL, msg_handler_thread,
-            (void *)msgargs) != 0)    {
+                                    (void *)&(msgargs[i])) != 0)    {
             perror("test_primality: pthread_create");
             break;
         }
@@ -95,24 +82,28 @@ int test_primality(long num, time_t *t,
         /**
          * @brief to make sure we check from zero to sqrt(num) exactly
          * we put the last thread range to sqrt(num) by hand   */
-        to = i == MAX_THREAD ? (long)sqrt(num) : to * i;
+        to = i == (MAX_THREAD-1) ? (long)sqrt((double)num) : block * (i+1);
     }
 
+    rv = -1;
     /**
      * @brief wait for created threads, and check returned values, if it's
      * not -1 it means that num isn't prime    */
     for (int i = 0; i < MAX_THREAD; i++)    {
-        pthread_join(msgid[i], NULL);
+        pthread_join(msgid[i], &rt);
+        thread_rv[i] = *((long *)rt);
+        free(rt);
+
+        if (thread_rv[i] > rv)
+            rv = thread_rv[i];
     }
 
     /**
      * @brief get the minimum returned factor of num    */
-    rv = thread_rv[0];
-    for (long i = 0; i < MAX_THREAD; i++)   {
-        rv = rv > thread_rv[i] ? thread_rv[i] : rv;
+    for (int i = MAX_THREAD; i >= 0; i--)   {
+        if (thread_rv[i] < rv && thread_rv[i] > 1)
+            rv = thread_rv[i];
     }
 
-    sec -= time(NULL);
-    *t = sec;
     return rv;
 }
